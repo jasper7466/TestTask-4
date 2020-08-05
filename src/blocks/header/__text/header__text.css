@@ -1,0 +1,10 @@
+.header__text {
+    margin: 20px;
+    color: white;
+}
+
+@media screen and (max-width: 768px) {
+    .header__text {
+        margin: 10px 0;
+    }
+}
