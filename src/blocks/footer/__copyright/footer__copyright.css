@@ -1,0 +1,20 @@
+.footer__copyright {
+    margin: 0;
+    font-family: Roboto, sans-serif;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 24px;
+    color: white;
+    text-decoration: none;
+}
+
+.footer__copyright_link {
+    opacity: 1;
+    transition: opacity .1s ease-in;
+}
+
+.footer__copyright_link:hover {
+    opacity: .3;
+    transition: opacity .1s ease-in;
+}
