@@ -73,6 +73,13 @@ export class Screen
         }
     }
 
+    drawImage(img)
+    {
+        this.drawRect(0, 0);
+        // this._ctx.drawImage(img, 0, 0);
+        this._ctx.putImageData(img, 0, 0)
+    }
+
     
     // Метод для отрисовки прямоугольника
     drawRect(x, y)
