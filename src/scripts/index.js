@@ -16,4 +16,7 @@ const screen = new Screen(holder, 500, 500);
 screen.deploy();
 
 // Запускаем демо
-screen.demo(3, 2, 20);
+// screen.demo(3, 2, 20);
+
+// screen.demo2(screen, screen._ctx);
+screen.gameEngineStart(screen.rectLoopRight);
