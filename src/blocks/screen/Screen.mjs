@@ -73,11 +73,10 @@ export class Screen
         }
     }
 
-    drawImage(img)
+    drawImage(img, scale)
     {
         this.drawRect(0, 0);
-        // this._ctx.drawImage(img, 0, 0);
-        this._ctx.putImageData(img, 0, 0)
+        this._ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
     }
 
     

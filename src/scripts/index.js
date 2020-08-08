@@ -6,6 +6,9 @@ import '../styles/index.css';
 // Импортируем необходимые модули из блоков
 import { Screen } from '../blocks/screen/Screen';
 
+// Импортируем модули и утилиты общего назначения
+import { ImageToner } from './utilities/ImageToner.mjs';
+
 // Получаем ссылки на необходимые узлы структуры документа
 const holder = document.querySelector('.main');                   // Главная секция страницы
 
@@ -19,32 +22,11 @@ screen.deploy();
 
 // screen.gameEngineStart(screen.rectLoopRight);
 
-var canvas = document.createElement('canvas');
-var context = canvas.getContext('2d');
-var img = document.querySelector('.tile');
-canvas.width = img.width;
-canvas.height = img.height;
-context.drawImage(img, 0, 0 );
-var imgPix = context.getImageData(0, 0, img.width, img.height);
+const img = new Image();
+img.src = require('../images/tile.png');
 
-console.log(imgPix);
+const modified = ImageToner(img, 100, 150, 70);
 
-let data = imgPix.data;
-
-for (let i = 0, n = data.length; i < n; i += 4)
-{
-    data[i] += 10;
-    data[i+1] += 10;
-    data[i+2] -= 90;
+modified.onload = () => {
+    screen.drawImage(modified, 1);
 }
-
-
-// data = data.map((item) => {
-//     if (item <= 240)
-//         item -= 0;
-//     return item;
-// })
-
-let new_ID = new ImageData(data, imgPix.width, imgPix.height);
-
-screen.drawImage(new_ID);
