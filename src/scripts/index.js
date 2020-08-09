@@ -9,6 +9,7 @@ import { Control } from '../scripts/modules/Control.mjs';
 
 // Импортируем модули и утилиты общего назначения
 import { ImageToner } from './utilities/ImageToner.mjs';
+import { Grid } from './modules/Grid.mjs';
 
 // Получаем ссылки на необходимые узлы структуры документа
 const holder = document.querySelector('.main');                   // Главная секция страницы
@@ -28,18 +29,8 @@ img.src = require('../images/tile.png');
 
 img.onload = () => {
     let modified = ImageToner(img, 100, 150, 70);
-    let modified1 = ImageToner(img, 0, 250, 70);
-    
-    const tile1 = new Control(screen.getContext(), modified1, 0, 0);
-    tile1.scale(0.5);
-    tile1.scale(1);
-    tile1.scaleWidth(700);
-    tile1.scaleHeight(180);
-    
+
     modified.onload = () => {
-        screen.drawImage(modified, 1);
-        tile1.render();
+        const grid = new Grid(screen.getContext(), 10, 10, 350, 350, 10, 10, (...rest) => new Control (...rest), modified, 0, 0.109375);
     }
-    
-    // tile1.render();   
 }

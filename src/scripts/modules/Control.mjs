@@ -1,6 +1,6 @@
 export class Control
 {
-    constructor(ctx, img, x, y)
+    constructor(ctx, img, x, y, offsetX = 0, offsetY = 0)
     {
         this._ctx = ctx;
         this._img = new Image();
@@ -9,6 +9,15 @@ export class Control
         this._y = y;
         this._dx = img.width;
         this._dy = img.height;
+        this._offsetX = offsetX;
+        this._offsetY = offsetY;
+        this._realRatio = img.width / img.height;
+        this._effectiveRatio = (img.width + offsetX) / (img.height + offsetY);
+    }
+
+    getRatio()
+    {
+        return this._ratio;
     }
 
     scale(factor)
@@ -31,6 +40,9 @@ export class Control
 
     render()
     {
-        this._ctx.drawImage(this._img, this._x, this._y, this._dx, this._dy);
+        let x = this._x;// - (this._x - this._x * this._offsetX);
+        let y = this._y;// - (this._dy - this._dy * this._offsetY);
+
+        this._ctx.drawImage(this._img, x, y, this._dx, this._dy);
     }
 }
