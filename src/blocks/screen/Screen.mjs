@@ -42,6 +42,11 @@ export class Screen
         this._container.appendChild(this._canvas);
     }
 
+    getContext()
+    {
+        return this._ctx;
+    }
+
     // Метод для открепления холста от родительского контейнера
     retract()
     {
