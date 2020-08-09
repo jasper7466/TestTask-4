@@ -26,18 +26,20 @@ screen.deploy();
 const img = new Image();
 img.src = require('../images/tile.png');
 
-let modified = ImageToner(img, 100, 150, 70);
-let modified1 = ImageToner(img, 0, 250, 70);
-
-const tile1 = new Control(screen.getContext(), modified1, 0, 0);
-tile1.scale(0.5);
-tile1.scale(1);
-tile1.scaleWidth(700);
-tile1.scaleHeight(180);
-
-modified.onload = () => {
-    screen.drawImage(modified, 1);
-    tile1.render();
+img.onload = () => {
+    let modified = ImageToner(img, 100, 150, 70);
+    let modified1 = ImageToner(img, 0, 250, 70);
+    
+    const tile1 = new Control(screen.getContext(), modified1, 0, 0);
+    tile1.scale(0.5);
+    tile1.scale(1);
+    tile1.scaleWidth(700);
+    tile1.scaleHeight(180);
+    
+    modified.onload = () => {
+        screen.drawImage(modified, 1);
+        tile1.render();
+    }
+    
+    // tile1.render();   
 }
-
-// tile1.render();
