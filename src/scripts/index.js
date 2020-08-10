@@ -50,6 +50,9 @@ img.onload = () => {
 
         screen.addLayer(() => grid.render());
         screen.renderEngineStart();
-        // screen.renderEngineStop();
+
+        grid.removeItem(2, 1);
+        grid.removeItem(1, 2);
+        grid.removeItem(3, 1);
     }
 }

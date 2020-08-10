@@ -75,10 +75,10 @@ export class Screen
     {
         if (this._stopEngine)
             return;
+        this.clear();
         this.renderQueue.forEach((renderFunc) => {
             renderFunc();
         });
-        console.log('here');
         requestAnimationFrame(() => this._renderStep());
     }
 }

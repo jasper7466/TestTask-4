@@ -12,6 +12,13 @@ export class Control
         this._offsetX = Math.abs(offsetX);
         this._offsetY = Math.abs(offsetY);
         this._useOffset = useOffset;
+        this.address = {
+            x: -1,
+            y: -1
+        };
+        this._temp = 0;
+        this._speed = 1;
+        this._call = undefined;
     }
 
     getWidth()
@@ -113,5 +120,20 @@ export class Control
             y -= this._height * this._offsetY;
         }
         this._ctx.drawImage(this._img, x, y, this._width, this._height);
+
+        if (this._temp > 0)
+        {
+            this._y += this._speed;
+            this._temp--;
+            this._speed = this._speed + 9.8/60;
+            if (this._temp == 0)
+                this._call(this);
+        }
+    }
+
+    onRemove(callback)
+    {
+        this._temp = 60;
+        this._call = callback;
     }
 }

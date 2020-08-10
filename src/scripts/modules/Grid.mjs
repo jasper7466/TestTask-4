@@ -44,10 +44,27 @@ export class Grid
         const y = this._y + this._stepY * cellY + this._alignY;
         const item = this._itemCreator(this._ctx, img, x, y, this._offsetX, this._offsetY, this._overfill);
         item.scale(this._item_scale);
+        item.address.x = cellX;
+        item.address.y = cellY;
         this._collection.push(item);
 
         this._collection.sort(this._offsetX < 0 ? ((a, b) => a._x > b._x ? 1 : -1) : ((a, b) => a._x < b._x ? 1 : -1));
         this._collection.sort(this._offsetY < 0 ? ((a, b) => a._y > b._y ? 1 : -1) : ((a, b) => a._y < b._y ? 1 : -1));
+    }
+
+    removeItem(cellX, cellY)
+    {
+        const item = this._collection.find(item => item.address.x === cellX && item.address.y === cellY);
+
+        if (item)
+            item.onRemove((...rest) => this.pullOffItem(...rest));
+        else
+            console.log('Item noy found');
+    }
+
+    pullOffItem(item)
+    {
+        this._collection = this._collection.filter(n => n != item);
     }
 
     render()
