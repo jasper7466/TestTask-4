@@ -29,8 +29,24 @@ img.src = require('../images/tile.png');
 
 img.onload = () => {
     let modified = ImageToner(img, 100, 150, 70);
+    let modified2 = ImageToner(img, 50, 80, 150);
+    let modified3 = ImageToner(img, 70, 200, 30);
+
+    let sprites = [modified, modified2, modified3, modified, modified, modified, modified, modified, modified];
+
+    var m = 7;
+    var n = 3;
 
     modified.onload = () => {
-        const grid = new Grid(screen.getContext(), 10, 10, 350, 350, 10, 10, (...rest) => new Control (...rest), modified, 0, 0.109375);
+        const grid = new Grid(screen.getContext(), 0, 0, 500, 500, m, n, (...rest) => new Control (...rest), sprites, 0, 0.109375, true);
+        
+        for (let i = 0; i < m; i++)
+        {
+            for(let j = 0; j < n; j++)
+            {
+                grid.addItem(i, i, j);
+            }
+        }
+        grid.render();
     }
 }

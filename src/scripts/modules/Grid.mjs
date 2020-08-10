@@ -1,75 +1,57 @@
 export class Grid
 {
-    constructor(ctx, x, y, width, height, cellsX, cellsY, creator, img, offsetX = 1, offsetY = 1, variations = 0)
+    constructor(ctx, x, y, width, height, cellsX, cellsY, itemCreator, sprites, offsetX = 0, offsetY = 0, overfill = false)
     {
-        // this._ctx = ctx;
-        // this._y = y;
-        // this._x = x;
-        // this._width = width;
-        // this._height = height;
-        // this._cellsX = cellsX;
-        // this._cellsY = cellsY;
-        this._itemCreator = creator;
-        // this._img = img;
-    
-        // this._offsetX = offsetX;
-        // this._offsetY = offsetY;
+        this._ctx = ctx;
+        this._x = x;
+        this._y = y;
+        this._width = width;
+        this._height = height;
+        this._cellsX = cellsX;
+        this._cellsY = cellsY;
+        this._itemCreator = itemCreator;
+        this._overfill = overfill;
+        this._offsetX = offsetX;
+        this._offsetY = offsetY;
+        this._sprites = sprites;
+        this._item_scale = 1;
+        this._alignX = 0;
+        this._alignY = 0;
 
-        let container = [];
+        this._collection = [];
 
-        // Полезный размер тайла
-        let realTileWidth = img.width - img.width * offsetX;
-        let realTileHeight = img.height - img.height * offsetY;
+        this._init();
+    }
 
-        // Полезное соотношение сторон
-        let realTileRatio = realTileWidth / realTileHeight;
+    _init()
+    {
+        const sample = this._itemCreator(this._ctx, this._sprites[0], 0, 0, this._offsetX, this._offsetY);
+        const shadows = true;
 
-        // Соотношение узлов сетки и её размеров
-        let gridRatio = (cellsX * width) / (cellsY * height);
+        this._item_scale = sample.autoScale(this._width, this._height, this._cellsX, this._cellsY, !this._overfill);
 
-        // Максимальная реальная сторона тайла
-        let newrealTileWidth = 0;
-        let newrealTileHeight = 0;
-        let scale_factor = 0;
+        this._stepX = sample.getEffectiveWidth();
+        this._stepY = sample.getEffectiveHeight();
 
-        // Определяем наибольшую сторону сетки с учётом стороны тайла и масштабируем тайлы
-        if (realTileRatio <= gridRatio)
-        {
-            newrealTileHeight = height / (cellsY + offsetY);
-            scale_factor = newrealTileHeight / realTileHeight;
-            newrealTileWidth = realTileWidth * scale_factor;
-        }
-        else
-        {
-            newrealTileWidth = width / (cellsX + offsetX);
-            scale_factor = newrealTileWidth / realTileWidth;
-            newrealTileHeight = realTileHeight * scale_factor;
-        }
-        
-        let iComp = i => (offsetX <= 0) ? (i < cellsX) : (i >= 0);
-        let jComp = j => (offsetY <= 0) ? (j < cellsY) : (j >= 0);
+        this._alignX = (this._width - this._stepX * this._cellsX) / 2;
+        this._alignY = (this._height - this._stepY * this._cellsY) / 2;
+    }
 
-        let iCount = (a) => (offsetX <= 0) ? (a + 1) : (a - 1);
-        let jCount = (a) => (offsetY <= 0) ? (a + 1) : (a - 1);
+    addItem(type, cellX, cellY)
+    {
+        const img = this._sprites[type];
+        const x = this._x + this._stepX * cellX + this._alignX;
+        const y = this._y + this._stepY * cellY + this._alignY;
+        const item = this._itemCreator(this._ctx, img, x, y, this._offsetX, this._offsetY, this._overfill);
+        item.scale(this._item_scale);
+        this._collection.push(item);
 
-        for (let i = (offsetX <= 0) ? 0 : (cellsX - 1); iComp(i); i = iCount(i))
-        {
-            for (let j = (offsetY <= 0) ? 0 : (cellsY - 1); jComp(j); j = jCount(j))
-            {
-                let tx = i * newrealTileWidth;
-                let ty = j * newrealTileHeight;
-                
-                const tile = this._itemCreator(ctx, img, x + tx, y + ty, offsetX, offsetY);
-                tile.scale(scale_factor);
-                container.push(tile);
-            }
-        }
+        this._collection.sort(this._offsetX < 0 ? ((a, b) => a._x > b._x ? 1 : -1) : ((a, b) => a._x < b._x ? 1 : -1));
+        this._collection.sort(this._offsetY < 0 ? ((a, b) => a._y > b._y ? 1 : -1) : ((a, b) => a._y < b._y ? 1 : -1));
+    }
 
-        container.forEach( (item) => {
-            item.render();
-            item._x = item._x + 3;
-            item._y = item._y + 3;
-        });
-        
+    render()
+    {
+        this._collection.forEach( (item) => item.render());
     }
 }
