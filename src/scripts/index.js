@@ -47,6 +47,9 @@ img.onload = () => {
                 grid.addItem(i, i, j);
             }
         }
-        grid.render();
+
+        screen.addLayer(() => grid.render());
+        screen.renderEngineStart();
+        // screen.renderEngineStop();
     }
 }
