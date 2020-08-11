@@ -1,4 +1,4 @@
-import { find } from "core-js/fn/array";
+import { RandomIntInclusive } from '../utilities/Random.mjs';
 
 export class BlastEngine
 {
@@ -6,7 +6,7 @@ export class BlastEngine
     {
         this._cellsX = cellsX;
         this._cellsY = cellsY;
-        this._variety = variety;
+        this._variety = variety - 1;
 
         this._field = undefined;
     }
@@ -14,12 +14,12 @@ export class BlastEngine
     randomFill()
     {
         const field = new Array();
-        for (let i = 0; i < cellsX; i++)
+        for (let i = 0; i < this._cellsX; i++)
         {
             field[i] = new Array();
-            for (let j = 0; j < cellsY; j++)
+            for (let j = 0; j < this._cellsY; j++)
             {
-                arr[i][j] = null;
+                field[i][j] = RandomIntInclusive(0, this._variety);
             }
         }
         this._field = field;

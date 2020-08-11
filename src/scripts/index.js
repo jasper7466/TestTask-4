@@ -10,6 +10,7 @@ import { Control } from '../scripts/modules/Control.mjs';
 // Импортируем модули и утилиты общего назначения
 import { ImageToner } from './utilities/ImageToner.mjs';
 import { Grid } from './modules/Grid.mjs';
+import { BlastEngine } from './modules/BlastEngine.mjs';
 
 // Получаем ссылки на необходимые узлы структуры документа
 const holder = document.querySelector('.main');                   // Главная секция страницы
@@ -59,6 +60,11 @@ img.onload = () => {
     
     modified.onload = () => {
         const grid = new Grid(screen.getContext(), 0, 0, 500, 500, m, n, (...rest) => new Control (...rest), sprites, 0, 0.109375, true);
+        const game = new BlastEngine(5, 5, 4);
+
+        game.randomFill()
+
+        console.log(game._field);
         
         for (let i = 0; i < m; i++)
         {
