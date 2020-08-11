@@ -37,6 +37,26 @@ img.onload = () => {
     var m = 7;
     var n = 3;
 
+    function fade(start, stop, speed, accel)
+    {
+        let value = start;
+        if (stop < 0)
+            stop = 0;
+
+        return (control) => {
+            value -= (speed + accel) / 60;
+            
+            if (value < stop)
+                value = stop;
+
+            control.alpha = value;
+            console.log(value);
+            if (value <= stop)
+                return true;
+            return false;
+        }
+    }
+    
     modified.onload = () => {
         const grid = new Grid(screen.getContext(), 0, 0, 500, 500, m, n, (...rest) => new Control (...rest), sprites, 0, 0.109375, true);
         
@@ -54,5 +74,10 @@ img.onload = () => {
         grid.removeItem(2, 1);
         grid.removeItem(1, 2);
         grid.removeItem(3, 1);
+
+        const item = grid.getItem(0, 0);
+
+        item.addAnimation(fade(1, 0, 0.5, 3));
+
     }
 }

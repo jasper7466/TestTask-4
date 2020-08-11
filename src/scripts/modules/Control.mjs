@@ -16,9 +16,13 @@ export class Control
             x: -1,
             y: -1
         };
+
         this._temp = 0;
         this._speed = 1;
-        this._call = undefined;
+        this._callback = undefined;
+        this._animationQueue = [];
+
+        this.alpha = 1;
     }
 
     getWidth()
@@ -119,21 +123,46 @@ export class Control
             x -= this._height * this._offsetX;
             y -= this._height * this._offsetY;
         }
+
+        this._animationQueue.forEach((animationFunc) => {
+            console.log(this.alpha);
+            const isDone = animationFunc(this);
+
+            if (isDone)
+                this._animationQueue = this._animationQueue.filter(func => func != animationFunc);
+        });
+
+        this._ctx.globalAlpha = this.alpha;
+
         this._ctx.drawImage(this._img, x, y, this._width, this._height);
 
-        if (this._temp > 0)
+        // if (this._temp > 0)
+        // {
+        //     this._y += this._speed;
+        //     this._temp--;
+        //     this._speed = this._speed + 9.8/60;
+        //     if (this._temp == 0)
+        //         this._call(this);
+        // }
+
+
+        if (this._animationQueue.length == 0 && this._callback)
         {
-            this._y += this._speed;
-            this._temp--;
-            this._speed = this._speed + 9.8/60;
-            if (this._temp == 0)
-                this._call(this);
+            this._call(this);
         }
+        
+        this._ctx.globalAlpha = 1.0;
     }
 
     onRemove(callback)
     {
         this._temp = 60;
         this._call = callback;
+    }
+
+    addAnimation(callback)
+    {
+        this._animationQueue.push(callback);
+        console.log(this._animationQueue);
     }
 }

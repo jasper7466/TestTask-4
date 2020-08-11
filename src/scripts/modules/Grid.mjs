@@ -52,14 +52,29 @@ export class Grid
         this._collection.sort(this._offsetY < 0 ? ((a, b) => a._y > b._y ? 1 : -1) : ((a, b) => a._y < b._y ? 1 : -1));
     }
 
-    removeItem(cellX, cellY)
+    getItem(cellX, cellY)
     {
         const item = this._collection.find(item => item.address.x === cellX && item.address.y === cellY);
 
         if (item)
-            item.onRemove((...rest) => this.pullOffItem(...rest));
+            return item;
         else
+        {
             console.log('Item noy found');
+            return false;
+        }
+    }
+
+    removeItem(cellX, cellY)
+    {
+        const item = this.getItem(cellX, cellY);
+        
+        if (item)
+        {
+            item.onRemove((...rest) => this.pullOffItem(...rest));
+            return true;
+        }
+        return false;
     }
 
     pullOffItem(item)
