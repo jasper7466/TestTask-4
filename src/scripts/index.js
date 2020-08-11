@@ -11,6 +11,7 @@ import { Control } from '../scripts/modules/Control.mjs';
 import { ImageToner } from './utilities/ImageToner.mjs';
 import { Grid } from './modules/Grid.mjs';
 import { BlastEngine } from './modules/BlastEngine.mjs';
+import { RandomIntInclusive } from './utilities/Random.mjs';
 
 // Получаем ссылки на необходимые узлы структуры документа
 const holder = document.querySelector('.main');                   // Главная секция страницы
@@ -25,20 +26,19 @@ screen.deploy();
 
 // screen.gameEngineStart(screen.rectLoopRight);
 
+const variety = 15;
+const cellsX = 30;
+const cellsY = 20;
+
+const sprites = [];
+
+var isLoaded = false;
+
 const img = new Image();
+
 img.src = require('../images/tile.png');
 
-img.onload = () => {
-    let modified = ImageToner(img, 100, 150, 70);
-    let modified2 = ImageToner(img, 50, 80, 150);
-    let modified3 = ImageToner(img, 70, 200, 30);
-
-    let sprites = [modified, modified2, modified3, modified, modified, modified, modified, modified, modified];
-
-    var m = 7;
-    var n = 3;
-
-    function fade(start, stop, speed, accel)
+function fade(start, stop, speed, accel)
     {
         let value = start;
         if (stop < 0)
@@ -51,39 +51,45 @@ img.onload = () => {
                 value = stop;
 
             control.alpha = value;
-            console.log(value);
             if (value <= stop)
                 return true;
             return false;
         }
     }
+
+img.onload = () => {
+
+    for (let i = 0; i < variety; i++)
+    {
+        let r = RandomIntInclusive(0, 20) + RandomIntInclusive(0, 200);
+        let g = RandomIntInclusive(0, 180) + RandomIntInclusive(0, 20);
+        let b = RandomIntInclusive(0, 20) + RandomIntInclusive(0, 200);
+
+        sprites.push(ImageToner(img, r, g, b));
+    }
+
+    sprites[variety - 1].onload = () =>
+
+    {
+        const grid = new Grid(screen.getContext(), 0, 0, 500, 500, cellsX, cellsY, (...rest) => new Control (...rest), sprites, 0, 0.109375, true);
+        const game = new BlastEngine(cellsX, cellsY, variety);
     
-    modified.onload = () => {
-        const grid = new Grid(screen.getContext(), 0, 0, 500, 500, m, n, (...rest) => new Control (...rest), sprites, 0, 0.109375, true);
-        const game = new BlastEngine(5, 5, 4);
-
         game.randomFill()
-
-        console.log(game._field);
         
-        for (let i = 0; i < m; i++)
+        for (let i = 0; i < cellsX; i++)
         {
-            for(let j = 0; j < n; j++)
+            for(let j = 0; j < cellsY; j++)
             {
-                grid.addItem(i, i, j);
+                grid.addItem(game._field[i][j], i, j);
             }
         }
-
+    
         screen.addLayer(() => grid.render());
         screen.renderEngineStart();
-
-        grid.removeItem(2, 1);
-        grid.removeItem(1, 2);
-        grid.removeItem(3, 1);
-
-        const item = grid.getItem(0, 0);
-
-        item.addAnimation(fade(1, 0, 0.5, 3));
-
+    
+        const item = grid.getItem(2, 2);
+    
+        item.addAnimation(fade(1, 0, 0.5, 1));
     }
+
 }

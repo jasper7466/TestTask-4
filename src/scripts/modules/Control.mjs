@@ -125,7 +125,6 @@ export class Control
         }
 
         this._animationQueue.forEach((animationFunc) => {
-            console.log(this.alpha);
             const isDone = animationFunc(this);
 
             if (isDone)
@@ -163,6 +162,5 @@ export class Control
     addAnimation(callback)
     {
         this._animationQueue.push(callback);
-        console.log(this._animationQueue);
     }
 }
