@@ -199,10 +199,9 @@ export class Control
             {
                 if(this._isPressed)
                     this.onClick();
-                this._isPressed = false;
             }
         }
-
+        this._isPressed = false;
     }
 
     onClick()
