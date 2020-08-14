@@ -16,6 +16,9 @@ export class Screen
         // TODO: На время отладки
         this._canvas.classList.add('screen');
 
+        this._canvas.addEventListener('mousedown', (event) => this._mouseDown(event));
+        this._canvas.addEventListener('mouseup', (event) => this._mouseUp(event));
+
         // TODO: Реализовать получение ссылки на функцию requestAnimationFrame для кроссбраузерности:
         // requestAnimationFrame
         // webkitRequestAnimationFrame
@@ -76,9 +79,29 @@ export class Screen
         if (this._stopEngine)
             return;
         this.clear();
-        this.renderQueue.forEach((renderFunc) => {
-            renderFunc();
+        this.renderQueue.forEach((control) => {
+            control.render();
         });
         requestAnimationFrame(() => this._renderStep());
+    }
+
+    _mouseDown(event)
+    {
+        let x = event.offsetX;
+        let y = event.offsetY;
+        
+        this.renderQueue.forEach((control) => {
+            control.mouseDown(x, y);
+        });
+    }
+
+    _mouseUp(event)
+    {
+        let x = event.offsetX;
+        let y = event.offsetY;
+        
+        this.renderQueue.forEach((control) => {
+            control.mouseUp(x, y);
+        });
     }
 }

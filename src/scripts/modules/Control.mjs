@@ -23,6 +23,9 @@ export class Control
         this._animationQueue = [];
 
         this.alpha = 1;
+
+        this._isPressed = false;
+        this._clickHandler = undefined;
     }
 
     getWidth()
@@ -120,7 +123,7 @@ export class Control
 
         if (this._useOffset)
         {
-            x -= this._height * this._offsetX;
+            x -= this._width * this._offsetX;
             y -= this._height * this._offsetY;
         }
 
@@ -157,6 +160,54 @@ export class Control
     {
         this._temp = 60;
         this._call = callback;
+    }
+
+    mouseDown(x, y)
+    {
+        let stopX = this._x + this._width;
+        let stopY = this._y + this._height;
+
+        if (this._useOffset)
+        {
+            stopX -= this._width * this._offsetX;
+            stopY -= this._height * this._offsetY;
+        }
+
+        if (x >= this._x && x <= stopX)
+        {
+            if (y >= this._y && y <= stopY)
+            {
+                this._isPressed = true;
+            }
+        }
+    }
+
+    mouseUp(x, y)
+    {
+        let stopX = this._x + this._width;
+        let stopY = this._y + this._height;
+
+        if (this._useOffset)
+        {
+            stopX -= this._width * this._offsetX;
+            stopY -= this._height * this._offsetY;
+        }
+
+        if (x >= this._x && x <= stopX)
+        {
+            if (y >= this._y && y <= stopY)
+            {
+                if(this._isPressed)
+                    this.onClick();
+                this._isPressed = false;
+            }
+        }
+
+    }
+
+    onClick()
+    {
+        this._clickHandler(this);
     }
 
     addAnimation(callback)

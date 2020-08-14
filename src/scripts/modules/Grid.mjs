@@ -82,6 +82,20 @@ export class Grid
         this._collection = this._collection.filter(n => n != item);
     }
 
+    mouseDown(x, y)
+    {
+        this._collection.forEach((item) => {
+            item.mouseDown(x, y);
+        });
+    }
+
+    mouseUp(x, y)
+    {
+        this._collection.forEach((item) => {
+            item.mouseUp(x, y);
+        });
+    }
+
     render()
     {
         this._collection.forEach( (item) => item.render());
