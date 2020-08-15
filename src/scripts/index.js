@@ -26,9 +26,9 @@ screen.deploy();
 
 // screen.gameEngineStart(screen.rectLoopRight);
 
-const variety = 3;
-const cellsX = 5;
-const cellsY = 5;
+const variety = 5;
+const cellsX = 10;
+const cellsY = 10;
 
 const sprites = [];
 
@@ -83,7 +83,13 @@ img.onload = () => {
         }
 
         grid._collection.forEach(item => {
-            item._clickHandler = () => item.addAnimation(fade(1, 0, 0.5, 1));
+            item._clickHandler = (item) => {
+                const group = game.getGroup(item.address.x, item.address.y);
+                group.forEach((cell) => {
+                    const tile = grid.getItem(cell.x, cell.y);
+                    tile.addAnimation(fade(1, 0, 1, 5));
+                });
+            }
         });
 
     

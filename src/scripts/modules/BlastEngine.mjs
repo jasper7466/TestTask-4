@@ -28,8 +28,8 @@ export class BlastEngine
     getGroup(cellX, cellY, type = undefined, group = [])
     {
         // Проверяем валидность координат (должны лежать в пределах сетки)
-        const validX = cellX >= 0 && cellX <= this._cellsX;
-        const validY = cellY >= 0 && cellY <= this._cellsY;
+        const validX = cellX >= 0 && cellX < this._cellsX;
+        const validY = cellY >= 0 && cellY < this._cellsY;
         if (!validX || !validY)
             return group;
         
