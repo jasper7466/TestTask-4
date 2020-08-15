@@ -26,7 +26,7 @@ screen.deploy();
 
 // screen.gameEngineStart(screen.rectLoopRight);
 
-const variety = 15;
+const variety = 3;
 const cellsX = 5;
 const cellsY = 5;
 
@@ -68,9 +68,7 @@ img.onload = () => {
         sprites.push(ImageToner(img, r, g, b));
     }
 
-    sprites[variety - 1].onload = () =>
-
-    {
+    sprites[variety - 1].onload = () => {
         const grid = new Grid(screen.getContext(), 0, 0, 500, 500, cellsX, cellsY, (...rest) => new Control (...rest), sprites, 0, 0.109375, true);
         const game = new BlastEngine(cellsX, cellsY, variety);
     
@@ -91,10 +89,8 @@ img.onload = () => {
     
         screen.addLayer(grid);
         screen.renderEngineStart();
-    
-        const item = grid.getItem(2, 2);
-    
-        item.addAnimation(fade(1, 0, 0.5, 1));
-    }
 
+        const group = game.getGroup(0, 0);
+        console.log(group);
+    }
 }
