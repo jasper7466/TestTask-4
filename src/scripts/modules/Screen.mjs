@@ -19,6 +19,9 @@ export class Screen
         this._canvas.addEventListener('mousedown', (event) => this._mouseDown(event));
         this._canvas.addEventListener('mouseup', (event) => this._mouseUp(event));
 
+        // Размещаем в родительском DOM-узле
+        this.deploy();
+
         // TODO: Реализовать получение ссылки на функцию requestAnimationFrame для кроссбраузерности:
         // requestAnimationFrame
         // webkitRequestAnimationFrame

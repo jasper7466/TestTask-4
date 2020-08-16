@@ -27,9 +27,6 @@ const holder = document.querySelector('.main');
 // Создаём экран
 const screen = new Screen(holder, screenWidth, screenHeight);
 
-// Деплоим экран в документ
-screen.deploy();
-
 const sprites = [];
 
 const img = new Image();
