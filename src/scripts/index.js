@@ -5,13 +5,16 @@ import '../styles/index.css';
 
 // Импортируем необходимые модули из блоков
 import { Screen } from '../blocks/screen/Screen';
-import { Control } from '../scripts/modules/Control.mjs';
 
 // Импортируем модули и утилиты общего назначения
-import { ImageToner } from './utilities/ImageToner.mjs';
 import { Grid } from './modules/Grid.mjs';
+import { Control } from './modules/Control.mjs';
 import { BlastEngine } from './modules/BlastEngine.mjs';
+import { ImageToner } from './utilities/ImageToner.mjs';
 import { RandomIntInclusive } from './utilities/Random.mjs';
+
+// Импортируем анимационные функции
+import { fade } from './utilities/Animations.mjs';
 
 // Получаем ссылки на необходимые узлы структуры документа
 const holder = document.querySelector('.main');                   // Главная секция страницы
@@ -21,10 +24,6 @@ const screen = new Screen(holder, 500, 500);
 
 // Деплоим экран в документ
 screen.deploy();
-
-// screen.demo(3, 2, 20);
-
-// screen.gameEngineStart(screen.rectLoopRight);
 
 const variety = 5;
 const cellsX = 10;
@@ -37,25 +36,6 @@ var isLoaded = false;
 const img = new Image();
 
 img.src = require('../images/tile.png');
-
-function fade(start, stop, speed, accel)
-    {
-        let value = start;
-        if (stop < 0)
-            stop = 0;
-
-        return (control) => {
-            value -= (speed + accel) / 60;
-            
-            if (value < stop)
-                value = stop;
-
-            control.alpha = value;
-            if (value <= stop)
-                return true;
-            return false;
-        }
-    }
 
 img.onload = () => {
 
