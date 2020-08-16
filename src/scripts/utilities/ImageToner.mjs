@@ -1,3 +1,5 @@
+import { RandomIntInclusive } from './Random.mjs';
+
 // Утилита для изменения тона изображения
 export function ImageToner(img, r = 0, g = 0, b = 0)
 {
@@ -29,4 +31,26 @@ export function ImageToner(img, r = 0, g = 0, b = 0)
     result.src = canvas.toDataURL('image/png', 1);
 
     return result;
+}
+
+/*
+Утилита для генерации массива перекрашенных изображений на основе шаблона
+
+template - экземпляр класса Image, шаблон для перекраски
+variety - количество вариаций цвета
+from/to - границы диапазона для генерации случайных составляющих цвета
+*/
+export function RandomRepaint(template, variety, to, from = 0)
+{
+    const sprites = new Array();
+
+    for (let i = 0; i < variety; i++)
+    {
+        let r = RandomIntInclusive(from, to);
+        let g = RandomIntInclusive(from, to);
+        let b = RandomIntInclusive(from, to);
+
+        sprites.push(ImageToner(template, r, g, b));
+    }
+    return sprites;
 }

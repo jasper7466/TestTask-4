@@ -8,8 +8,7 @@ import { Screen } from './modules/Screen.mjs';
 import { Grid } from './modules/Grid.mjs';
 import { Control } from './modules/Control.mjs';
 import { BlastEngine } from './modules/BlastEngine.mjs';
-import { ImageToner } from './utilities/ImageToner.mjs';
-import { RandomIntInclusive } from './utilities/Random.mjs';
+import { RandomRepaint } from './utilities/ImageToner.mjs';
 
 // Импортируем анимационные функции
 import { fade } from './utilities/Animations.mjs';
@@ -27,22 +26,13 @@ const holder = document.querySelector('.main');
 // Создаём экран
 const screen = new Screen(holder, screenWidth, screenHeight);
 
-const sprites = [];
-
 const img = new Image();
 
 img.src = require('../images/tile.png');
 
 img.onload = () => {
 
-    for (let i = 0; i < variety; i++)
-    {
-        let r = RandomIntInclusive(0, 20) + RandomIntInclusive(0, 200);
-        let g = RandomIntInclusive(0, 180) + RandomIntInclusive(0, 20);
-        let b = RandomIntInclusive(0, 20) + RandomIntInclusive(0, 200);
-
-        sprites.push(ImageToner(img, r, g, b));
-    }
+    const sprites = RandomRepaint(img, variety, 200);
 
     sprites[variety - 1].onload = () => {
         const grid = new Grid(screen.getContext(), 0, 0, 500, 500, cellsX, cellsY, (...rest) => new Control (...rest), sprites, 0, 0.109375, true);
@@ -73,6 +63,5 @@ img.onload = () => {
         screen.renderEngineStart();
 
         const group = game.getGroup(0, 0);
-        console.log(group);
     }
 }
