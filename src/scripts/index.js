@@ -14,22 +14,23 @@ import { RandomIntInclusive } from './utilities/Random.mjs';
 // Импортируем анимационные функции
 import { fade } from './utilities/Animations.mjs';
 
-// Получаем ссылки на необходимые узлы структуры документа
-const holder = document.querySelector('.main');                   // Главная секция страницы
+// Объявляем константы
+const screenWidth = 500;
+const screenHeight = 500;
+const cellsX = 10;
+const cellsY = 10;
+const variety = 5;
+
+// Получаем ссылку на главную секцию страницы
+const holder = document.querySelector('.main');
 
 // Создаём экран
-const screen = new Screen(holder, 500, 500);
+const screen = new Screen(holder, screenWidth, screenHeight);
 
 // Деплоим экран в документ
 screen.deploy();
 
-const variety = 5;
-const cellsX = 10;
-const cellsY = 10;
-
 const sprites = [];
-
-var isLoaded = false;
 
 const img = new Image();
 
