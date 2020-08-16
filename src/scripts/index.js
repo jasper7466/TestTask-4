@@ -3,10 +3,8 @@
 // Импортируем корневой файл стилей страницы
 import '../styles/index.css';
 
-// Импортируем необходимые модули из блоков
-import { Screen } from '../blocks/screen/Screen';
-
 // Импортируем модули и утилиты общего назначения
+import { Screen } from './modules/Screen.mjs';
 import { Grid } from './modules/Grid.mjs';
 import { Control } from './modules/Control.mjs';
 import { BlastEngine } from './modules/BlastEngine.mjs';
