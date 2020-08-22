@@ -1,11 +1,12 @@
 import { RandomIntInclusive } from './Random.mjs';
+import { AsyncImageLoader } from './AsyncImageLoader.mjs';
 
 // Утилита для изменения тона изображения
-export function ImageToner(img, r = 0, g = 0, b = 0)
+export function AsyncImageToner(img, r = 0, g = 0, b = 0)
 {
     const canvas = document.createElement('canvas');    // Скрытый холст
     const ctx = canvas.getContext('2d');                // Контекст
-    const result = new Image();                         // Возвращаемое изображение
+    let result = undefined;                             // Возвращаемое изображение
     let pixData = undefined;                            // Пиксельные данные изображения
 
     canvas.width = img.width;
@@ -28,29 +29,34 @@ export function ImageToner(img, r = 0, g = 0, b = 0)
 
     // Помещаем его на холст и сохраняем из холста в новое изображение
     ctx.putImageData(imgData, 0, 0);
-    result.src = canvas.toDataURL('image/png', 1);
+    result = AsyncImageLoader(canvas.toDataURL('image/png', 1));
 
     return result;
 }
 
-/*
-Утилита для генерации массива перекрашенных изображений на основе шаблона
-
-template - экземпляр класса Image, шаблон для перекраски
-variety - количество вариаций цвета
-from/to - границы диапазона для генерации случайных составляющих цвета
-*/
-export function RandomRepaint(template, variety, to, from = 0)
+// Утилита для генерации массива перекрашенных изображений на основе шаблона.
+// template - экземпляр класса Image, шаблон для перекраски
+// variety - количество вариаций цвета
+// from/to - границы диапазона для генерации случайных составляющих цвета
+export function AsyncRandomRepaint(template, variety, to, from = 0)
 {
-    const sprites = new Array();
+    // Создаём пустой массив для хранения промисов от асинхронного загрузчика изображений
+    const images = new Array();
 
+    // Получаем требуемое количество вариаций перекрашенных изображений
     for (let i = 0; i < variety; i++)
     {
         let r = RandomIntInclusive(from, to);
         let g = RandomIntInclusive(from, to);
         let b = RandomIntInclusive(from, to);
 
-        sprites.push(ImageToner(template, r, g, b));
+        // Кладём промис в массив
+        images.push(AsyncImageToner(template, r, g, b));
     }
-    return sprites;
+
+    // Возвращаем промис, который разрешится только при условии загрузки всех изображений
+    return new Promise((resolve) => {
+        Promise.all(images)
+            .then(images => resolve(images));
+    });
 }
