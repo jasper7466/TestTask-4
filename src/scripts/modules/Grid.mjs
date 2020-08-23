@@ -17,6 +17,7 @@ export class Grid
         this._item_scale = 1;
         this._alignX = 0;
         this._alignY = 0;
+        this._remove_queue = [];
 
         this._collection = [];
 
@@ -37,12 +38,21 @@ export class Grid
         this._alignY = (this._height - this._stepY * this._cellsY) / 2;
     }
 
+    addToRemove(item)
+    {
+        this._remove_queue.push(item);
+    }
+
     addItem(type, cellX, cellY)
     {
         const img = this._sprites[type];
         const x = this._x + this._stepX * cellX + this._alignX;
         const y = this._y + this._stepY * cellY + this._alignY;
         const item = this._itemCreator(this._ctx, img, x, y, this._offsetX, this._offsetY, this._overfill);
+
+        // item.setRemover(value => this.addToRemove(value));
+        item.setRemover(value => this.pullOffItem(value));
+
         item.scale(this._item_scale);
         item.address.x = cellX;
         item.address.y = cellY;
@@ -60,7 +70,7 @@ export class Grid
             return item;
         else
         {
-            console.log('Item noy found');
+            console.log(`Item not found. X = ${cellX}, Y = ${cellY}`);
             return false;
         }
     }
@@ -79,7 +89,7 @@ export class Grid
 
     pullOffItem(item)
     {
-        this._collection = this._collection.filter(n => n != item);
+        this._collection = this._collection.filter(element => element != item);
     }
 
     mouseDown(x, y)
@@ -98,6 +108,8 @@ export class Grid
 
     render()
     {
-        this._collection.forEach( (item) => item.render());
+        // this._remove_queue.forEach(item => this.pullOffItem(item));
+        // this._remove_queue = [];
+        this._collection.forEach(item => item.render());
     }
 }

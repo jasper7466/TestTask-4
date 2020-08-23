@@ -19,8 +19,8 @@ export class Control
 
         this._temp = 0;
         this._speed = 1;
-        this._callback = undefined;
         this._animationQueue = [];
+        this._remover = undefined;
 
         this.alpha = 1;
 
@@ -31,6 +31,11 @@ export class Control
     getWidth()
     {
         return this._width;
+    }
+
+    setRemover(callback)
+    {
+        this._remover = callback;
     }
 
     getHeight()
@@ -138,28 +143,13 @@ export class Control
 
         this._ctx.drawImage(this._img, x, y, this._width, this._height);
 
-        // if (this._temp > 0)
-        // {
-        //     this._y += this._speed;
-        //     this._temp--;
-        //     this._speed = this._speed + 9.8/60;
-        //     if (this._temp == 0)
-        //         this._call(this);
-        // }
-
-
-        if (this._animationQueue.length == 0 && this._callback)
-        {
-            this._call(this);
-        }
-        
         this._ctx.globalAlpha = 1.0;
     }
 
-    onRemove(callback)
+    selfRemove()
     {
-        this._temp = 60;
-        this._call = callback;
+        if (this._remover)
+            this._remover(this);
     }
 
     mouseDown(x, y)

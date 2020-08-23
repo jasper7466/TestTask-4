@@ -13,12 +13,13 @@ import { AsyncImageLoader } from './utilities/AsyncImageLoader.mjs';
 
 // Анимационные функции
 import { fade } from './utilities/Animations.mjs';
+import { move } from './utilities/Animations.mjs';
 
 // Константы
 const screenWidth = 500;            // Ширина экрана
 const screenHeight = 500;           // Высота экрана
-const cellsX = 10;                  // Размер сетки поля по оси X
-const cellsY = 10;                  // Размер сетки поля по оси Y
+const cellsX = 40;                  // Размер сетки поля по оси X
+const cellsY = 40;                  // Размер сетки поля по оси Y
 const variety = 5;                  // Кол-во разновидностей тайлов
 
 // Переменные
@@ -52,17 +53,42 @@ function init()
     {
         for(let j = 0; j < cellsY; j++)
         {
-            grid.addItem(game._field[i][j], i, j);
+            grid.addItem(game._field[i][j].type, i, j);
         }
     }
 
     grid._collection.forEach(item => {
         item._clickHandler = (item) => {
+            // Получаем группу тайлов на удаление
             const group = game.getGroup(item.address.x, item.address.y);
+
+            // Для каждой клетки на удаление ищем тайл и применяем анимацию исчезновения
             group.forEach((cell) => {
                 const tile = grid.getItem(cell.x, cell.y);
-                tile.addAnimation(fade(1, 0, 1, 5));
+                if (tile)
+                    tile.addAnimation(fade(1, 0.4, 1, 5));
             });
+
+            // Очищаем тип удаляемых клеток
+            game.clearGroup(group);
+
+            // Инициируем смещение клеток
+            game.collapse();
+
+            // Получаем список сместившихся клеток
+            let changes = game.getChanges();
+
+            // Применяем анимацию смещения
+            changes.forEach(item => {
+                const tile = grid.getItem(item.x, item.y);
+                tile.addAnimation(move(item.dx * grid._stepX, item.dy * grid._stepY, 100, 500));
+                tile.address.x = item.dx;
+                tile.address.y = item.dy;
+            });
+
+            // Фиксируем игровое поле ()
+            game.fixChanges();
+            console.log(grid._collection);
         }
     });
 
