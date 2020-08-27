@@ -64,6 +64,7 @@ export class Screen
         this._renderQueue.push(renderFunc);
     }
 
+    // Метод добаления задания в очередь на циклическое выполнение
     addTask(callback)
     {
         this._taskQueue.push(callback);
@@ -85,33 +86,29 @@ export class Screen
     // Метод для отрисовки кадра анимационного цикла
     _renderStep()
     {
-        if (this._stopEngine)
+        if (this._stopEngine)                                   // Выходим, если движок остановлен
             return;
-        this._taskQueue.forEach(task => task());
-        this.clear();
-        this._renderQueue.forEach((control) => {
-            control.render();
-        });
+        this._taskQueue.forEach(task => task());                // Выполняем задания из очереди
+        this.clear();                                           // Чистим холст
+        this._renderQueue.forEach(control => control.render()); // Отрисовываем элементы
         requestAnimationFrame(() => this._renderStep());
     }
 
+    // Обработчик события нажатия кнопки мыши
     _mouseDown(event)
     {
         let x = event.offsetX;
         let y = event.offsetY;
         
-        this._renderQueue.forEach((control) => {
-            control.onPress(x, y);
-        });
+        this._renderQueue.forEach(control => control.onPress(x, y));
     }
 
+    // Обработчик события отпускания кнопки мыши
     _mouseUp(event)
     {
         let x = event.offsetX;
         let y = event.offsetY;
         
-        this._renderQueue.forEach((control) => {
-            control.onRelease(x, y);
-        });
+        this._renderQueue.forEach(control => control.onRelease(x, y));
     }
 }
