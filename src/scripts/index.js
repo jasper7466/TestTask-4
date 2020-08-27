@@ -102,6 +102,7 @@ function gameLoop(state, grid, game)
         // >>> Этап 1 - нажатие на тайл
         if (state.isPressed)
         {
+            grid.stopEventPropagation();                                    // Блокируем распространение событий
             state.address = grid.getInstanceAddress(state.target);          // Получаем адрес тайла в сетке
             state.group = game.getGroup(state.address.x, state.address.y);  // Получаем группу адресов ячеек на удаление
 
@@ -158,7 +159,10 @@ function gameLoop(state, grid, game)
             });
 
             if (!state.isMoving)
+            {
                 grid.updateItems();
+                grid.allowEventPropagation();    // Разрешаем распространение событий
+            }
         }
     }
 }

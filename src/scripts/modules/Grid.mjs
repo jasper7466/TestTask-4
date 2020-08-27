@@ -15,6 +15,8 @@ export class Grid extends BaseComponent
         this._stepY = 0;            // Шаг сетки по оси y
 
         this._removeQueue = [];     // Очередь на удаление
+
+        this._eventPropagation = true;      // Флаг разрешения погружения событий
     }
 
     // Метод пересчёта шага сетки
@@ -98,13 +100,25 @@ export class Grid extends BaseComponent
     onPress(x, y)
     {
         super.onPress(x, y);
-        this._collection.forEach(item => item.instance.onPress(x, y));
+        if (this._eventPropagation)
+            this._collection.forEach(item => item.instance.onPress(x, y));
     }
 
     onRelease(x, y)
     {
         super.onRelease(x, y);
-        this._collection.forEach(item => item.instance.onRelease(x, y));
+        if (this._eventPropagation)
+            this._collection.forEach(item => item.instance.onRelease(x, y));
+    }
+
+    stopEventPropagation()
+    {
+        this._eventPropagation = false;
+    }
+
+    allowEventPropagation()
+    {
+        this._eventPropagation = true;
     }
 
     render()
