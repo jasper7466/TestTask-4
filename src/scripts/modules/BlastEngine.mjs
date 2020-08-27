@@ -1,39 +1,42 @@
 import { RandomIntInclusive } from '../utilities/Random.mjs';
 
+// Класс игровой логики
 export class BlastEngine
 {
     constructor(cellsX, cellsY, variety)
     {
-        this._cellsX = cellsX;
-        this._cellsY = cellsY;
-        this._variety = variety - 1;
+        this._cellsX = cellsX;          // Количество ячеек по оси X
+        this._cellsY = cellsY;          // Количество ячеек по оси Y
+        this._variety = variety - 1;    // Количество вариаций типов ячеек
 
-        this._field = undefined;
-        this._empty_cell = -1;
-        this._group = undefined;
+        this._field = undefined;        // Будущий "двумерный" массив игрового поля
+        this._empty_cell = -1;          // Тип, присваиваемый пустой ячейке
+        this._group = undefined;        // Выбранная группа однотипных ячеек
     }
 
+    // Метод заполнения поля случайным образом
     randomFill()
     {
-        const field = new Array();
+        const field = new Array();                  // Массив "столбцов"
         for (let i = 0; i < this._cellsX; i++)
         {
-            field[i] = new Array();
+            field[i] = new Array();                 // Массив "строк"
             for (let j = 0; j < this._cellsY; j++)
             {
                 let type = RandomIntInclusive(0, this._variety);
                 field[i][j] = {
-                    type: type,
-                    x: i,
-                    y: j,
-                    dx: i,
-                    dy: j
+                    type: type,     // Условный тип ячейки
+                    x: i,           // Положение в сетке по X
+                    y: j,           // Положение в сетке по Y
+                    dx: i,          // Новое положение по X (при перемещении)
+                    dy: j           // Новое положение по Y (при перемещении)
                 };
             }
         }
         this._field = field;
     }
 
+    // Метод рекурсивного поиска группы однотипных соседних ячеек по координатам одной ячейки
     _getGroup(cellX, cellY, type = undefined, group = [])
     {
         // Проверяем валидность координат (должны лежать в пределах сетки)
@@ -80,6 +83,7 @@ export class BlastEngine
         return group;
     }
 
+    // Метод выдачи группы найденных ячеек во внешние интерфейсы
     getGroup(cellX, cellY)
     {
         this._group = this._getGroup(cellX, cellY);
@@ -87,7 +91,7 @@ export class BlastEngine
     }
 
     // Метод сброса типа клетки
-    clearCell(x, y)
+    _clearCell(x, y)
     {
         this._field[x][y].type = this._empty_cell;
     }
@@ -95,7 +99,7 @@ export class BlastEngine
     // Метод сброса типов группы клеток
     clearGroup()
     {
-        this._group.forEach(cell => this.clearCell(cell.x, cell.y));
+        this._group.forEach(cell => this._clearCell(cell.x, cell.y));
     }
 
     // Метод проверки на пустую ячейку
@@ -104,13 +108,14 @@ export class BlastEngine
         return this._field[x][y].type === this._empty_cell;
     }
 
+    // Метод проверки наличия изменений в координатах ячейки
     isChanged(x, y)
     {
         let cell = this._field[x][y];
-        console.log((cell.dx != x || cell.dy != y) && (cell.type != this._empty_cell));
         return (cell.dx != x || cell.dy != y) && (cell.type != this._empty_cell);
     }
 
+    // Метод получения параметров ячейки по её адресу
     getCell(x, y)
     {
         return this._field[x][y];
@@ -126,6 +131,7 @@ export class BlastEngine
         this._field[x2][y2] = cell1;
     }
 
+    // Метод получения массива смещённых ячеек
     getChanges()
     {
         const changes = new Array();
@@ -144,6 +150,7 @@ export class BlastEngine
         return changes;
     }
 
+    // Метод фиксирования положения ячеек (уравнивание x/y с dx/dy)
     fixChanges()
     {
         for (let x = 0; x < this._cellsX; x++)
@@ -157,20 +164,21 @@ export class BlastEngine
         }
     }
 
+    // Метод смещения ячеек под действием "гравитации"
     collapse()
     {
-        this.clearGroup();
-        for (let x = 0; x < this._cellsX; x++)
+        this.clearGroup();                              // Сбрасываем тип ячеек для выбранной группы
+        for (let x = 0; x < this._cellsX; x++)          // Проход по столбцам
         {
-            let gap = 0;
-            for (let y = this._cellsY-1; y >= 0; y--)
+            let gap = 0;                                // Инициализируем начальное значение "пропуска" между ячейками
+            for (let y = this._cellsY-1; y >= 0; y--)   // Проход по строкам от нижней к верхней
             {    
-                if (this.isEmpty(x, y))
+                if (this.isEmpty(x, y))                 // Если нашли пустоту
                 {
-                    gap++;
-                    continue;
+                    gap++;                              // то инкрементим счётчик пропусков
+                    continue;                           // и выходим из итерации цикла
                 }
-                this.swapCells(x, y, x, y + gap);
+                this.swapCells(x, y, x, y + gap);       // Если нашли занятую ячейку - смещаем её
             }
         }
     }
