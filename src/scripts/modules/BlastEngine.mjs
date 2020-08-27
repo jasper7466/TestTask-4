@@ -10,6 +10,7 @@ export class BlastEngine
 
         this._field = undefined;
         this._empty_cell = -1;
+        this._group = undefined;
     }
 
     randomFill()
@@ -33,7 +34,7 @@ export class BlastEngine
         this._field = field;
     }
 
-    getGroup(cellX, cellY, type = undefined, group = [])
+    _getGroup(cellX, cellY, type = undefined, group = [])
     {
         // Проверяем валидность координат (должны лежать в пределах сетки)
         const validX = cellX >= 0 && cellX < this._cellsX;
@@ -46,7 +47,7 @@ export class BlastEngine
         {
             type = this._field[cellX][cellY].type;
             // Рекурсивно вызываем этот же метод, но уже с типом и массивом группы
-            return this.getGroup(cellX, cellY, type, group);
+            return this._getGroup(cellX, cellY, type, group);
         }
 
         // Проверяем совпадение типов по переданным координатам
@@ -72,11 +73,17 @@ export class BlastEngine
 
         // Рекурсивно вызываем метод для соседних ячеек
         adjacent.forEach( (item) => {
-            this.getGroup(item.x, item.y, type, group);
+            this._getGroup(item.x, item.y, type, group);
         });
 
         // На последней итерации вернём массив с координатами ячеек группы
         return group;
+    }
+
+    getGroup(cellX, cellY)
+    {
+        this._group = this._getGroup(cellX, cellY);
+        return this._group;
     }
 
     // Метод сброса типа клетки
@@ -86,9 +93,9 @@ export class BlastEngine
     }
 
     // Метод сброса типов группы клеток
-    clearGroup(group)
+    clearGroup()
     {
-        group.forEach(cell => this.clearCell(cell.x, cell.y));
+        this._group.forEach(cell => this.clearCell(cell.x, cell.y));
     }
 
     // Метод проверки на пустую ячейку
@@ -100,7 +107,8 @@ export class BlastEngine
     isChanged(x, y)
     {
         let cell = this._field[x][y];
-        return cell.dx != x || cell.dy != y && cell.type != this._empty_cell;
+        console.log((cell.dx != x || cell.dy != y) && (cell.type != this._empty_cell));
+        return (cell.dx != x || cell.dy != y) && (cell.type != this._empty_cell);
     }
 
     getCell(x, y)
@@ -151,6 +159,7 @@ export class BlastEngine
 
     collapse()
     {
+        this.clearGroup();
         for (let x = 0; x < this._cellsX; x++)
         {
             let gap = 0;

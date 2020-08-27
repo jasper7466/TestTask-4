@@ -7,7 +7,8 @@ export class Screen
         this._canvas.width = width;                         // Ширина
         this._canvas.height = height;                       // Высота
         this._ctx = this._canvas.getContext('2d');          // Контекст
-        this.renderQueue = [];                              // Очередь рендер-функций слоёв
+        this._renderQueue = [];                             // Очередь рендер-функций слоёв
+        this._taskQueue = [];                               // Очередь прочих функций для циклического выполнения
         this._stopEngine = true;                            // Флаг остановки движка отрисовки
 
         // На случай, если браузер не поддерживает тег <canvas>
@@ -60,7 +61,12 @@ export class Screen
     // Метод для добавления в конец очереди отрисовки новой рендер-функции
     addLayer(renderFunc)
     {
-        this.renderQueue.push(renderFunc);
+        this._renderQueue.push(renderFunc);
+    }
+
+    addTask(callback)
+    {
+        this._taskQueue.push(callback);
     }
 
     // Метод для запуска движка отрисовки
@@ -81,8 +87,9 @@ export class Screen
     {
         if (this._stopEngine)
             return;
+        this._taskQueue.forEach(task => task());
         this.clear();
-        this.renderQueue.forEach((control) => {
+        this._renderQueue.forEach((control) => {
             control.render();
         });
         requestAnimationFrame(() => this._renderStep());
@@ -93,8 +100,8 @@ export class Screen
         let x = event.offsetX;
         let y = event.offsetY;
         
-        this.renderQueue.forEach((control) => {
-            control.mouseDown(x, y);
+        this._renderQueue.forEach((control) => {
+            control.onPress(x, y);
         });
     }
 
@@ -103,8 +110,8 @@ export class Screen
         let x = event.offsetX;
         let y = event.offsetY;
         
-        this.renderQueue.forEach((control) => {
-            control.mouseUp(x, y);
+        this._renderQueue.forEach((control) => {
+            control.onRelease(x, y);
         });
     }
 }

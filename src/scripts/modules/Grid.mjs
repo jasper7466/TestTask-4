@@ -1,115 +1,129 @@
-export class Grid
+// Импортируем базовый класс
+import { BaseComponent } from './BaseComponent.mjs';
+
+export class Grid extends BaseComponent
 {
-    constructor(ctx, x, y, width, height, cellsX, cellsY, itemCreator, sprites, offsetX = 0, offsetY = 0, overfill = false)
+    constructor(cellsX, cellsY, ratio = 1)
     {
-        this._ctx = ctx;
-        this._x = x;
-        this._y = y;
-        this._width = width;
-        this._height = height;
-        this._cellsX = cellsX;
-        this._cellsY = cellsY;
-        this._itemCreator = itemCreator;
-        this._overfill = overfill;
-        this._offsetX = offsetX;
-        this._offsetY = offsetY;
-        this._sprites = sprites;
-        this._item_scale = 1;
-        this._alignX = 0;
-        this._alignY = 0;
-        this._remove_queue = [];
+        super();
+        this._cellsX = cellsX;      // Размер сетки по оси x (количество столбцов)
+        this._cellsY = cellsY;      // Размер сетки по оси y (количество строк)
+        this._ratio = ratio;        // Отношение сторон ячейки сетки
 
-        this._collection = [];
+        this._collection = [];      // Хранилище элементов сетки
+        this._stepX = 0;            // Шаг сетки по оси x
+        this._stepY = 0;            // Шаг сетки по оси y
 
-        this._init();
+        this._removeQueue = [];     // Очередь на удаление
     }
 
-    _init()
+    // Метод пересчёта шага сетки
+    _gridRecalc()
     {
-        const sample = this._itemCreator(this._ctx, this._sprites[0], 0, 0, this._offsetX, this._offsetY);
-        const shadows = true;
-
-        this._item_scale = sample.autoScale(this._width, this._height, this._cellsX, this._cellsY, !this._overfill);
-
-        this._stepX = sample.getEffectiveWidth();
-        this._stepY = sample.getEffectiveHeight();
-
-        this._alignX = (this._width - this._stepX * this._cellsX) / 2;
-        this._alignY = (this._height - this._stepY * this._cellsY) / 2;
+        this._stepX = this._width / this._cellsX;
+        this._stepY = this._height / this._cellsY;
+        // this._alignX = (this._width - this._stepX * this._cellsX) / 2;
+        // this._alignY = (this._height - this._stepY * this._cellsY) / 2;
     }
 
-    addToRemove(item)
+    // Метод установки размеров контейнера
+    setSize(x, y)
     {
-        this._remove_queue.push(item);
+        super.setSize(x, y);
+        this._gridRecalc();
     }
 
-    addItem(type, cellX, cellY)
+    // Метод получения координат элемента по указателю на него
+    getInstanceAddress(instance)
     {
-        const img = this._sprites[type];
-        const x = this._x + this._stepX * cellX + this._alignX;
-        const y = this._y + this._stepY * cellY + this._alignY;
-        const item = this._itemCreator(this._ctx, img, x, y, this._offsetX, this._offsetY, this._overfill);
+        const item = this._collection.find(element => element.instance === instance);
+        const address = {
+            x: item.cellX,
+            y: item.cellY
+        };
+        return address;
+    }
 
-        // item.setRemover(value => this.addToRemove(value));
-        item.setRemover(value => this.pullOffItem(value));
+    updateItems()
+    {
+        this._collection.forEach(element => {
+            if (element.updateX != undefined)
+                element.cellX = element.updateX;
 
-        item.scale(this._item_scale);
-        item.address.x = cellX;
-        item.address.y = cellY;
+            if (element.updateY != undefined)
+                element.cellY = element.updateY;
+        });
+    }
+
+    addItem(instance, cellX, cellY)
+    {
+        const x = this._stepX * cellX;
+        const y = this._stepY * cellY;
+
+        instance.setContext(this._ctx);
+        instance.setPosition(x, y);
+        instance.scaleOnBackgroundWidth(this._stepX);   // FIXME:
+
+        const item = {
+            instance: instance,
+            cellX: cellX,
+            cellY: cellY,
+            updateX: undefined,
+            updateY: undefined
+        };
+
         this._collection.push(item);
 
-        this._collection.sort(this._offsetX < 0 ? ((a, b) => a._x > b._x ? 1 : -1) : ((a, b) => a._x < b._x ? 1 : -1));
-        this._collection.sort(this._offsetY < 0 ? ((a, b) => a._y > b._y ? 1 : -1) : ((a, b) => a._y < b._y ? 1 : -1));
+        // this._collection.sort(this._offsetX < 0 ? ((a, b) => a._x > b._x ? 1 : -1) : ((a, b) => a._x < b._x ? 1 : -1));
+        // this._collection.sort(this._offsetY < 0 ? ((a, b) => a._y > b._y ? 1 : -1) : ((a, b) => a._y < b._y ? 1 : -1));
     }
 
-    getItem(cellX, cellY)
+    getCell(cellX, cellY)
     {
-        const item = this._collection.find(item => item.address.x === cellX && item.address.y === cellY);
-
-        if (item)
-            return item;
-        else
-        {
-            console.log(`Item not found. X = ${cellX}, Y = ${cellY}`);
-            return false;
-        }
+        const item = this._collection.find(item => item.cellX === cellX && item.cellY === cellY);
+        return item;
+    }
+    // Метод получения указателя на содержимое ячейки по её координатам
+    getInstance(cellX, cellY)
+    {
+        const cell = this.getCell(cellX, cellY);
+        return cell.instance;
     }
 
-    removeItem(cellX, cellY)
+    removeItem(item)
     {
-        const item = this.getItem(cellX, cellY);
-        
-        if (item)
-        {
-            item.onRemove((...rest) => this.pullOffItem(...rest));
-            return true;
-        }
-        return false;
+        this._removeQueue.push(item);
     }
 
-    pullOffItem(item)
+    onPress(x, y)
     {
-        this._collection = this._collection.filter(element => element != item);
+        super.onPress(x, y);
+        this._collection.forEach(item => item.instance.onPress(x, y));
     }
 
-    mouseDown(x, y)
+    onRelease(x, y)
     {
-        this._collection.forEach((item) => {
-            item.mouseDown(x, y);
-        });
-    }
-
-    mouseUp(x, y)
-    {
-        this._collection.forEach((item) => {
-            item.mouseUp(x, y);
-        });
+        super.onRelease(x, y);
+        this._collection.forEach(item => item.instance.onRelease(x, y));
     }
 
     render()
     {
-        // this._remove_queue.forEach(item => this.pullOffItem(item));
-        // this._remove_queue = [];
-        this._collection.forEach(item => item.render());
+        this._removeQueue.forEach(item => {
+            item.onRemove();
+            this._collection = this._collection.filter(element => element.instance != item);
+        });
+
+        this._removeQueue = [];
+        
+        super.render();
+        this._collection.forEach(item => item.instance.render());
+
+        // FIXME: DEBUG
+        // this._ctx.font = "18px serif";
+        // this._ctx.fillStyle = "#FF00FF"
+        // this._collection.forEach(element => {
+        //     this._ctx.fillText(`(${element.cellX}:${element.cellY})`, this._stepX * element.cellX, this._stepY * element.cellY + 20);
+        // });
     }
 }

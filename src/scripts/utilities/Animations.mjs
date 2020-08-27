@@ -11,10 +11,9 @@ export function fade(start, stop, speed, accel)
         if (value < stop)
             value = stop;
 
-        control.alpha = value;
+        control._alpha = value;
         if (value <= stop)
         {
-            control.selfRemove();
             return true;
         }
         return false;
