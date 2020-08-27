@@ -20,19 +20,21 @@ export function fade(start, stop, speed, accel)
     }
 }
 
+// Функция перемещения компонента в заданные координаты
 export function move(x, y, speed, accel)
 {
-    let dirX = undefined;
-    let dirY = undefined;
+    let dirX = undefined;       // Направление движения по X
+    let dirY = undefined;       // Направление движения по Y
 
     return (control) => {
 
-        if (dirX == undefined)
+        if (dirX == undefined)  // Определяем направления (знак)
         {
             dirX = (control._x < x) ? 1 : -1;
             dirY = (control._y < y) ? 1 : -1;
         }
-
+        
+        // Выполняем смещение
         control._x += dirX * (speed + accel) / 60;
         control._y += dirY * (speed + accel) / 60;
 
