@@ -27,6 +27,16 @@ const cellsY = 10;              // Размер сетки поля по оси 
 const variety = 5;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
+const gameState = {
+    isPressed: false,           // Флаг нажатия на тайл
+    isRemoving: false,          // Флаг "удаление в процессе"
+    isMoving: false,            // Флаг "перемещение в процессе"
+    target: undefined,          // Сущность, на которой произошло событие нажатия
+    address: undefined,         // Адрес ячейки, содержащей сущность
+    group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
+    changes: undefined          // Сместившаяся группа (адреса/ссылки сущностей)
+}
+
 // Переменные
 let sprites = undefined;        // Будущий массив со спрайтами тайлов
 
@@ -50,22 +60,22 @@ function init()
     {
         for(let y = 0; y < cellsY; y++)
         {
-            const tile = TileFactory(sprites, game._field[x][y].type);
-            tile.setClickHandler(tileClickHandler(gameState));
-            grid.addItem(tile, x, y);
+            const tile = TileFactory(sprites, game._field[x][y].type);  // Создаём тайл
+            tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
+            grid.addItem(tile, x, y);                                   // Помещаем в узел сетки
         }
     }
 
-    screen.addLayer(grid);          // Добавляем сетку в очередь движка отрисовки
-    screen.addTask(gameLoop(gameState, grid, game));
-    screen.renderEngineStart();     // Запускаем движок
+    screen.addLayer(grid);                              // Добавляем сетку в очередь движка отрисовки
+    screen.addTask(gameLoop(gameState, grid, game));    // Добавляем циклический вызов функции игрового цикла
+    screen.renderEngineStart();                         // Запускаем движок
 }
 
 // Обработчик события клика по тайлу
 const tileClickHandler = state => {
     return target => {
-        state.isPressed = true;
-        state.target = target;
+        state.isPressed = true;     // Выставляем флаг нажатия
+        state.target = target;      // Указываем ссылку на сущность
     }
 }
 
@@ -80,21 +90,6 @@ AsyncImageLoader(require('../images/tile.png'))
     })
     .catch(err => console.log(err));
 
-const game_state = {
-    tile_pressed: false,
-    tile_address: {x: -1, y: -1}
-}
-
-const gameState = {
-    isPressed: false,
-    isRemoving: false,
-    isMoving: false,
-    target: undefined,
-    address: undefined,
-    group: undefined,
-    changes: undefined
-}
-
 // Функция игрового цикла
 function gameLoop(state, grid, game)
 {
@@ -105,11 +100,10 @@ function gameLoop(state, grid, game)
             grid.stopEventPropagation();                                    // Блокируем распространение событий
             state.address = grid.getInstanceAddress(state.target);          // Получаем адрес тайла в сетке
             state.group = game.getGroup(state.address.x, state.address.y);  // Получаем группу адресов ячеек на удаление
+            state.group = state.group.map(element => grid.getCell(element.x, element.y));   // Получаем ячейки
 
             // Для каждого адреса из группы на удаление ищем тайл и применяем анимацию исчезновения
-            state.group = state.group.map(element => grid.getCell(element.x, element.y));
             state.group.forEach(cell => cell.instance.addParallelTask(fade(1, 0.4, 1, 2)));
-
             state.isPressed = false;  // Снимаем флаг нажатия на тайл
             state.isRemoving = true;  // Выставляем флаг ожидания удаления
         }
@@ -117,15 +111,14 @@ function gameLoop(state, grid, game)
         // >>> Этап 2 - удаление группы тайлов
         if (state.isRemoving)
         {
-            // Пробуем перейти на следующий шаг
-            state.isRemoving = false;
+            state.isRemoving = false;               // Пробуем перейти на следующий шаг
 
             // Если хоть одна анимация не завершена - возвращаемся на прошлый шаг
             state.group.forEach(element => {
                 if (element.instance.getParallelQueueSize() > 0)
                     state.isRemoving = true;
                 else
-                    grid.removeItem(element.instance);
+                    grid.removeItem(element.instance);  // Если анимация завершена - удаляем элемент из сетки FIXME:
             });
 
             // Если анимации завершены
@@ -137,11 +130,11 @@ function gameLoop(state, grid, game)
                 state.changes = state.changes.map(change => {
                     const cell = grid.getCell(change.x, change.y);
                     cell.instance.addParallelTask(move(change.dx * grid._stepX, change.dy * grid._stepY, 100, 100));
-                    cell.updateX = change.dx;
-                    cell.updateY = change.dy;
+                    cell.updateX = change.dx;       // Задём координаты
+                    cell.updateY = change.dy;       // для обновления
                     return cell;
                 });
-                game.fixChanges();
+                game.fixChanges();                  // Уравниваем текущие координаты с новыми
                 state.isMoving = true;              // Переходим на этап перемещения
             }
         }
@@ -149,8 +142,7 @@ function gameLoop(state, grid, game)
         // >>> Этап 3 - перемещение тайлов
         if (state.isMoving)
         {
-            // Пробуем очистить состояние
-            state.isMoving = false;
+            state.isMoving = false;                 // Пробуем очистить состояние
 
             // Если хоть одна анимация не завершена - возвращаемся на прошлый шаг
             state.changes.forEach(element => {
@@ -160,8 +152,8 @@ function gameLoop(state, grid, game)
 
             if (!state.isMoving)
             {
-                grid.updateItems();
-                grid.allowEventPropagation();    // Разрешаем распространение событий
+                grid.updateItems();                 // Обновляем координаты элементов в сетке
+                grid.allowEventPropagation();       // Разрешаем распространение событий
             }
         }
     }
