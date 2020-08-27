@@ -1,6 +1,7 @@
 // Импортируем базовый класс
 import { BaseComponent } from './BaseComponent.mjs';
 
+// Класс контейнера-сетки
 export class Grid extends BaseComponent
 {
     constructor(cellsX, cellsY, ratio = 1)
@@ -46,6 +47,7 @@ export class Grid extends BaseComponent
         return address;
     }
 
+    // Метод обновления адресов элементов (при необходимости)
     updateItems()
     {
         this._collection.forEach(element => {
@@ -57,6 +59,7 @@ export class Grid extends BaseComponent
         });
     }
 
+    // Метод добавления элемента
     addItem(instance, cellX, cellY)
     {
         const x = this._stepX * cellX;
@@ -67,36 +70,36 @@ export class Grid extends BaseComponent
         instance.scaleOnBackgroundWidth(this._stepX);   // FIXME:
 
         const item = {
-            instance: instance,
-            cellX: cellX,
-            cellY: cellY,
-            updateX: undefined,
-            updateY: undefined
+            instance: instance,     // Ссылка на сущность
+            cellX: cellX,           // Адрес по X
+            cellY: cellY,           // Адрес по Y
+            updateX: undefined,     // Новый адрес по X (для обновления)
+            updateY: undefined      // Новый адрес по Y (для обновления)
         };
 
         this._collection.push(item);
-
-        // this._collection.sort(this._offsetX < 0 ? ((a, b) => a._x > b._x ? 1 : -1) : ((a, b) => a._x < b._x ? 1 : -1));
-        // this._collection.sort(this._offsetY < 0 ? ((a, b) => a._y > b._y ? 1 : -1) : ((a, b) => a._y < b._y ? 1 : -1));
     }
 
+    // Метод получения ячейки по её координатам
     getCell(cellX, cellY)
     {
         const item = this._collection.find(item => item.cellX === cellX && item.cellY === cellY);
         return item;
     }
-    // Метод получения указателя на содержимое ячейки по её координатам
+    // Метод получения указателя на сущность из ячейки по её координатам
     getInstance(cellX, cellY)
     {
         const cell = this.getCell(cellX, cellY);
         return cell.instance;
     }
 
+    // Метод добаления элемента в очередь на удаление
     removeItem(item)
     {
         this._removeQueue.push(item);
     }
 
+    // Обработчик события нажатия
     onPress(x, y)
     {
         super.onPress(x, y);
@@ -104,6 +107,7 @@ export class Grid extends BaseComponent
             this._collection.forEach(item => item.instance.onPress(x, y));
     }
 
+    // Обработчик события отпускания
     onRelease(x, y)
     {
         super.onRelease(x, y);
@@ -111,26 +115,32 @@ export class Grid extends BaseComponent
             this._collection.forEach(item => item.instance.onRelease(x, y));
     }
 
+    // Метод запрета распространения событий к элементам
     stopEventPropagation()
     {
         this._eventPropagation = false;
     }
 
+    // Метод разрешения распространения событий к элементам
     allowEventPropagation()
     {
         this._eventPropagation = true;
     }
 
+    // Метод отрисовки
     render()
     {
+        // Удаляем элементы, стоящие в очереди
         this._removeQueue.forEach(item => {
             item.onRemove();
             this._collection = this._collection.filter(element => element.instance != item);
         });
 
-        this._removeQueue = [];
+        this._removeQueue = [];     // Очищаем очередь на удаление
         
         super.render();
+
+        // Инициируем отрисовку сущностей из ячеек
         this._collection.forEach(item => item.instance.render());
 
         // FIXME: DEBUG
