@@ -67,7 +67,7 @@ function init()
     }
 
     screen.addLayer(grid);                              // Добавляем сетку в очередь движка отрисовки
-    screen.addTask(gameLoop(gameState, grid, game));    // Добавляем циклический вызов функции игрового цикла
+    screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                         // Запускаем движок
 }
 
@@ -91,7 +91,7 @@ AsyncImageLoader(require('../images/tile.png'))
     .catch(err => console.log(err));
 
 // Функция игрового цикла
-function gameLoop(state, grid, game)
+function gameLoop(state, grid, game, sprites)
 {
     return () => {
         // >>> Этап 1 - нажатие на тайл
@@ -129,7 +129,7 @@ function gameLoop(state, grid, game)
                 // Применяем анимацию смещения
                 state.changes = state.changes.map(change => {
                     const cell = grid.getCell(change.x, change.y);
-                    cell.instance.addParallelTask(move(change.dx * grid._stepX, change.dy * grid._stepY, 100, 100));
+                    cell.instance.addParallelTask(move(change.dx * grid._stepX, change.dy * grid._stepY, 100, 300));
                     cell.updateX = change.dx;       // Задём координаты
                     cell.updateY = change.dy;       // для обновления
                     return cell;
@@ -153,6 +153,14 @@ function gameLoop(state, grid, game)
             if (!state.isMoving)
             {
                 grid.updateItems();                 // Обновляем координаты элементов в сетке
+                const refilment = game.refill();    // Заполняем пустые ячейки, получаем массив новых ячеек
+
+                refilment.forEach(cell => {
+                    const tile = TileFactory(sprites, cell.type);               // Создаём тайл
+                    tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
+                    grid.addItem(tile, cell.x, cell.y);                         // Помещаем в узел сетки
+                });
+
                 grid.allowEventPropagation();       // Разрешаем распространение событий
             }
         }

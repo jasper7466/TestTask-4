@@ -36,6 +36,32 @@ export class BlastEngine
         this._field = field;
     }
 
+    // Метод заполнения пустых ячеек
+    refill()
+    {
+        const refilment = [];       // Вновь созданные ячейки
+
+        for (let i = 0; i < this._cellsX; i++)
+        {
+            for (let j = 0; j < this._cellsY; j++)
+            {
+                if (this._field[i][j].type == this._empty_cell)
+                {
+                    const cell = {
+                        type: RandomIntInclusive(0, this._variety),
+                        x: i,
+                        y: j,
+                        dx: i,
+                        dy: j
+                    };
+                    this._field[i][j] = cell;
+                    refilment.push(cell);
+                }
+            }
+        }
+        return refilment;
+    }
+
     // Метод рекурсивного поиска группы однотипных соседних ячеек по координатам одной ячейки
     _getGroup(cellX, cellY, type = undefined, group = [])
     {
