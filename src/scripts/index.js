@@ -18,10 +18,12 @@ import { move } from './utilities/Animations.mjs';
 
 // Константы
 const holder = document.querySelector('.main'); // Родительский узел для размещения экрана отрисовки
-const screenWidth = 500;        // Ширина экрана
-const screenHeight = 500;       // Высота экрана
+const screenWidth = 1000;       // Ширина экрана
+const screenHeight = 700;       // Высота экрана
 const gridWidth = 500;          // Ширина игрового поля
 const gridHeight = 500;         // Высота игрового поля
+const gridX = 50;              // Положение игрового поля по X
+const gridY = 150;              // Положение игрового поля по Y
 const cellsX = 10;              // Размер сетки поля по оси X
 const cellsY = 10;              // Размер сетки поля по оси Y
 const variety = 5;              // Кол-во разновидностей тайлов
@@ -52,6 +54,7 @@ const ctx = screen.getContext();
 function init()
 {
     grid.setSize(gridWidth, gridHeight);    // Задаём размер игрового поля
+    grid.setPosition(gridX, gridY);
     grid.setContext(ctx);                   // и контекст
     game.randomFill();                      // Инициируем заполнение поля тайлами
     
@@ -89,6 +92,11 @@ AsyncImageLoader(require('../images/tile.png'))
             });
     })
     .catch(err => console.log(err));
+
+AsyncImageLoader(require('../images/field.png'))
+    .then(img => {
+        grid.setBackgroundImage(img);
+    });
 
 // Функция игрового цикла
 function gameLoop(state, grid, game, sprites)
@@ -129,7 +137,8 @@ function gameLoop(state, grid, game, sprites)
                 // Применяем анимацию смещения
                 state.changes = state.changes.map(change => {
                     const cell = grid.getCell(change.x, change.y);
-                    cell.instance.addParallelTask(move(change.dx * grid._stepX, change.dy * grid._stepY, 100, 300));
+                    let loc = grid.getCellLocation(change.dx, change.dy);
+                    cell.instance.addParallelTask(move(loc.x, loc.y, 100, 300));
                     cell.updateX = change.dx;       // Задём координаты
                     cell.updateY = change.dy;       // для обновления
                     return cell;
