@@ -8,6 +8,7 @@ import { Screen } from './modules/Screen.mjs';
 import { Grid } from './modules/Grid.mjs';
 import { BlastEngine } from './modules/BlastEngine.mjs';
 import { BaseComponent } from './modules/BaseComponent.mjs';
+import { Label } from './modules/Label.mjs';
 import { AsyncRandomRepaint } from './utilities/AsyncImageToner.mjs';
 import { AsyncImageLoader } from './utilities/AsyncImageLoader.mjs';
 import { TileFactory } from './utilities/TileFactory.mjs';
@@ -36,7 +37,8 @@ const gameState = {
     target: undefined,          // Сущность, на которой произошло событие нажатия
     address: undefined,         // Адрес ячейки, содержащей сущность
     group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
-    changes: undefined          // Сместившаяся группа (адреса/ссылки сущностей)
+    changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
+    moves: 50                   // Оставшееся количество ходов
 }
 
 // Переменные
@@ -46,6 +48,7 @@ let sprites = undefined;        // Будущий массив со спрайт
 const screen = new Screen(holder, screenWidth, screenHeight);
 const grid = new Grid(cellsX, cellsY);
 const game = new BlastEngine(cellsX, cellsY, variety);
+const moves = new Label(120, '#FFFFFF', 'Roboto Slab');
 
 // Получаем контекст
 const ctx = screen.getContext();
@@ -57,6 +60,13 @@ function init()
     grid.setPosition(gridX, gridY);
     grid.setContext(ctx);                   // и контекст
     game.randomFill();                      // Инициируем заполнение поля тайлами
+
+    moves.setPosition(700, 100);
+    moves.setContext(ctx);
+    moves.resizeOnBackground();
+    moves.scaleOnBackgroundWidth(300);
+    moves.setText(gameState.moves);
+
     
     // Заполняем сетку тайлами
     for (let x = 0; x < cellsX; x++)
@@ -70,6 +80,7 @@ function init()
     }
 
     screen.addLayer(grid);                              // Добавляем сетку в очередь движка отрисовки
+    screen.addLayer(moves);                             // Добавляем сетку в очередь движка отрисовки
     screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                         // Запускаем движок
 }
@@ -83,20 +94,15 @@ const tileClickHandler = state => {
 }
 
 // Асинхронно загружаем образец тайла и получаем набор спрайтов для тайлов
-AsyncImageLoader(require('../images/tile.png'))
-    .then(img => {
-        AsyncRandomRepaint(img, variety, depth)
-            .then(repainted => {
-                sprites = repainted;
-                init();
-            });
-    })
-    .catch(err => console.log(err));
+Promise.all([
+    AsyncImageLoader(require('../images/tile.png')).then(img => {
+        AsyncRandomRepaint(img, variety, depth).then(repainted => sprites = repainted)}),
+    AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/moves.png')).then(img => moves.setBackgroundImage(img))
+])
+    .then(() => init())
+    .catch(err => console.log(err))
 
-AsyncImageLoader(require('../images/field.png'))
-    .then(img => {
-        grid.setBackgroundImage(img);
-    });
 
 // Функция игрового цикла
 function gameLoop(state, grid, game, sprites)
@@ -112,8 +118,9 @@ function gameLoop(state, grid, game, sprites)
 
             // Для каждого адреса из группы на удаление ищем тайл и применяем анимацию исчезновения
             state.group.forEach(cell => cell.instance.addParallelTask(fade(1, 0.4, 1, 2)));
-            state.isPressed = false;  // Снимаем флаг нажатия на тайл
-            state.isRemoving = true;  // Выставляем флаг ожидания удаления
+            state.isPressed = false;    // Снимаем флаг нажатия на тайл
+            state.isRemoving = true;    // Выставляем флаг ожидания удаления
+            state.moves--;              // Декрементим количество оставшихся ходов
         }
 
         // >>> Этап 2 - удаление группы тайлов
@@ -169,7 +176,7 @@ function gameLoop(state, grid, game, sprites)
                     tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
                     grid.addItem(tile, cell.x, cell.y);                         // Помещаем в узел сетки
                 });
-
+                moves.setText(gameState.moves);     // Выводим количество оставшихся шагов
                 grid.allowEventPropagation();       // Разрешаем распространение событий
             }
         }
