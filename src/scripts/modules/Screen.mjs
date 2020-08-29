@@ -7,7 +7,8 @@ export class Screen
         this._canvas.width = width;                         // Ширина
         this._canvas.height = height;                       // Высота
         this._ctx = this._canvas.getContext('2d');          // Контекст
-        this.renderQueue = [];                              // Очередь рендер-функций слоёв
+        this._renderQueue = [];                             // Очередь рендер-функций слоёв
+        this._taskQueue = [];                               // Очередь прочих функций для циклического выполнения
         this._stopEngine = true;                            // Флаг остановки движка отрисовки
 
         // На случай, если браузер не поддерживает тег <canvas>
@@ -18,6 +19,9 @@ export class Screen
 
         this._canvas.addEventListener('mousedown', (event) => this._mouseDown(event));
         this._canvas.addEventListener('mouseup', (event) => this._mouseUp(event));
+
+        // Размещаем в родительском DOM-узле
+        this.deploy();
 
         // TODO: Реализовать получение ссылки на функцию requestAnimationFrame для кроссбраузерности:
         // requestAnimationFrame
@@ -57,7 +61,13 @@ export class Screen
     // Метод для добавления в конец очереди отрисовки новой рендер-функции
     addLayer(renderFunc)
     {
-        this.renderQueue.push(renderFunc);
+        this._renderQueue.push(renderFunc);
+    }
+
+    // Метод добаления задания в очередь на циклическое выполнение
+    addTask(callback)
+    {
+        this._taskQueue.push(callback);
     }
 
     // Метод для запуска движка отрисовки
@@ -76,32 +86,29 @@ export class Screen
     // Метод для отрисовки кадра анимационного цикла
     _renderStep()
     {
-        if (this._stopEngine)
+        if (this._stopEngine)                                   // Выходим, если движок остановлен
             return;
-        this.clear();
-        this.renderQueue.forEach((control) => {
-            control.render();
-        });
+        this._taskQueue.forEach(task => task());                // Выполняем задания из очереди
+        this.clear();                                           // Чистим холст
+        this._renderQueue.forEach(control => control.render()); // Отрисовываем элементы
         requestAnimationFrame(() => this._renderStep());
     }
 
+    // Обработчик события нажатия кнопки мыши
     _mouseDown(event)
     {
         let x = event.offsetX;
         let y = event.offsetY;
         
-        this.renderQueue.forEach((control) => {
-            control.mouseDown(x, y);
-        });
+        this._renderQueue.forEach(control => control.onPress(x, y));
     }
 
+    // Обработчик события отпускания кнопки мыши
     _mouseUp(event)
     {
         let x = event.offsetX;
         let y = event.offsetY;
         
-        this.renderQueue.forEach((control) => {
-            control.mouseUp(x, y);
-        });
+        this._renderQueue.forEach(control => control.onRelease(x, y));
     }
 }

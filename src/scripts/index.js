@@ -1,96 +1,168 @@
 'use strict';
 
-// Импортируем корневой файл стилей страницы
+// Корневой файл стилей страницы
 import '../styles/index.css';
 
-// Импортируем необходимые модули из блоков
-import { Screen } from '../blocks/screen/Screen';
-import { Control } from '../scripts/modules/Control.mjs';
-
-// Импортируем модули и утилиты общего назначения
-import { ImageToner } from './utilities/ImageToner.mjs';
+// Модули и утилиты общего назначения
+import { Screen } from './modules/Screen.mjs';
 import { Grid } from './modules/Grid.mjs';
 import { BlastEngine } from './modules/BlastEngine.mjs';
-import { RandomIntInclusive } from './utilities/Random.mjs';
+import { BaseComponent } from './modules/BaseComponent.mjs';
+import { AsyncRandomRepaint } from './utilities/AsyncImageToner.mjs';
+import { AsyncImageLoader } from './utilities/AsyncImageLoader.mjs';
+import { TileFactory } from './utilities/TileFactory.mjs';
 
-// Получаем ссылки на необходимые узлы структуры документа
-const holder = document.querySelector('.main');                   // Главная секция страницы
+// Анимационные функции
+import { fade } from './utilities/Animations.mjs';
+import { move } from './utilities/Animations.mjs';
 
-// Создаём экран
-const screen = new Screen(holder, 500, 500);
+// Константы
+const holder = document.querySelector('.main'); // Родительский узел для размещения экрана отрисовки
+const screenWidth = 500;        // Ширина экрана
+const screenHeight = 500;       // Высота экрана
+const gridWidth = 500;          // Ширина игрового поля
+const gridHeight = 500;         // Высота игрового поля
+const cellsX = 10;              // Размер сетки поля по оси X
+const cellsY = 10;              // Размер сетки поля по оси Y
+const variety = 5;              // Кол-во разновидностей тайлов
+const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
-// Деплоим экран в документ
-screen.deploy();
+const gameState = {
+    isPressed: false,           // Флаг нажатия на тайл
+    isRemoving: false,          // Флаг "удаление в процессе"
+    isMoving: false,            // Флаг "перемещение в процессе"
+    target: undefined,          // Сущность, на которой произошло событие нажатия
+    address: undefined,         // Адрес ячейки, содержащей сущность
+    group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
+    changes: undefined          // Сместившаяся группа (адреса/ссылки сущностей)
+}
 
-// screen.demo(3, 2, 20);
+// Переменные
+let sprites = undefined;        // Будущий массив со спрайтами тайлов
 
-// screen.gameEngineStart(screen.rectLoopRight);
+// Создаём экран отрисовки, игровое поле и игровой движок
+const screen = new Screen(holder, screenWidth, screenHeight);
+const grid = new Grid(cellsX, cellsY);
+const game = new BlastEngine(cellsX, cellsY, variety);
 
-const variety = 3;
-const cellsX = 5;
-const cellsY = 5;
+// Получаем контекст
+const ctx = screen.getContext();
 
-const sprites = [];
-
-var isLoaded = false;
-
-const img = new Image();
-
-img.src = require('../images/tile.png');
-
-function fade(start, stop, speed, accel)
+// Функция инициализации и конфигурирования игры
+function init()
+{
+    grid.setSize(gridWidth, gridHeight);    // Задаём размер игрового поля
+    grid.setContext(ctx);                   // и контекст
+    game.randomFill();                      // Инициируем заполнение поля тайлами
+    
+    // Заполняем сетку тайлами
+    for (let x = 0; x < cellsX; x++)
     {
-        let value = start;
-        if (stop < 0)
-            stop = 0;
-
-        return (control) => {
-            value -= (speed + accel) / 60;
-            
-            if (value < stop)
-                value = stop;
-
-            control.alpha = value;
-            if (value <= stop)
-                return true;
-            return false;
+        for(let y = 0; y < cellsY; y++)
+        {
+            const tile = TileFactory(sprites, game._field[x][y].type);  // Создаём тайл
+            tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
+            grid.addItem(tile, x, y);                                   // Помещаем в узел сетки
         }
     }
 
-img.onload = () => {
+    screen.addLayer(grid);                              // Добавляем сетку в очередь движка отрисовки
+    screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
+    screen.renderEngineStart();                         // Запускаем движок
+}
 
-    for (let i = 0; i < variety; i++)
-    {
-        let r = RandomIntInclusive(0, 20) + RandomIntInclusive(0, 200);
-        let g = RandomIntInclusive(0, 180) + RandomIntInclusive(0, 20);
-        let b = RandomIntInclusive(0, 20) + RandomIntInclusive(0, 200);
-
-        sprites.push(ImageToner(img, r, g, b));
+// Обработчик события клика по тайлу
+const tileClickHandler = state => {
+    return target => {
+        state.isPressed = true;     // Выставляем флаг нажатия
+        state.target = target;      // Указываем ссылку на сущность
     }
+}
 
-    sprites[variety - 1].onload = () => {
-        const grid = new Grid(screen.getContext(), 0, 0, 500, 500, cellsX, cellsY, (...rest) => new Control (...rest), sprites, 0, 0.109375, true);
-        const game = new BlastEngine(cellsX, cellsY, variety);
-    
-        game.randomFill()
-        
-        for (let i = 0; i < cellsX; i++)
+// Асинхронно загружаем образец тайла и получаем набор спрайтов для тайлов
+AsyncImageLoader(require('../images/tile.png'))
+    .then(img => {
+        AsyncRandomRepaint(img, variety, depth)
+            .then(repainted => {
+                sprites = repainted;
+                init();
+            });
+    })
+    .catch(err => console.log(err));
+
+// Функция игрового цикла
+function gameLoop(state, grid, game, sprites)
+{
+    return () => {
+        // >>> Этап 1 - нажатие на тайл
+        if (state.isPressed)
         {
-            for(let j = 0; j < cellsY; j++)
+            grid.stopEventPropagation();                                    // Блокируем распространение событий
+            state.address = grid.getInstanceAddress(state.target);          // Получаем адрес тайла в сетке
+            state.group = game.getGroup(state.address.x, state.address.y);  // Получаем группу адресов ячеек на удаление
+            state.group = state.group.map(element => grid.getCell(element.x, element.y));   // Получаем ячейки
+
+            // Для каждого адреса из группы на удаление ищем тайл и применяем анимацию исчезновения
+            state.group.forEach(cell => cell.instance.addParallelTask(fade(1, 0.4, 1, 2)));
+            state.isPressed = false;  // Снимаем флаг нажатия на тайл
+            state.isRemoving = true;  // Выставляем флаг ожидания удаления
+        }
+
+        // >>> Этап 2 - удаление группы тайлов
+        if (state.isRemoving)
+        {
+            state.isRemoving = false;               // Пробуем перейти на следующий шаг
+
+            // Если хоть одна анимация не завершена - возвращаемся на прошлый шаг
+            state.group.forEach(element => {
+                if (element.instance.getParallelQueueSize() > 0)
+                    state.isRemoving = true;
+                else
+                    grid.removeItem(element.instance);  // Если анимация завершена - удаляем элемент из сетки FIXME:
+            });
+
+            // Если анимации завершены
+            if (!state.isRemoving)
             {
-                grid.addItem(game._field[i][j], i, j);
+                game.collapse();                    // Инициируем смещение клеток
+                state.changes = game.getChanges();  // Получаем список сместившихся клеток
+                // Применяем анимацию смещения
+                state.changes = state.changes.map(change => {
+                    const cell = grid.getCell(change.x, change.y);
+                    cell.instance.addParallelTask(move(change.dx * grid._stepX, change.dy * grid._stepY, 100, 300));
+                    cell.updateX = change.dx;       // Задём координаты
+                    cell.updateY = change.dy;       // для обновления
+                    return cell;
+                });
+                game.fixChanges();                  // Уравниваем текущие координаты с новыми
+                state.isMoving = true;              // Переходим на этап перемещения
             }
         }
 
-        grid._collection.forEach(item => {
-            item._clickHandler = () => item.addAnimation(fade(1, 0, 0.5, 1));
-        });
+        // >>> Этап 3 - перемещение тайлов
+        if (state.isMoving)
+        {
+            state.isMoving = false;                 // Пробуем очистить состояние
 
-    
-        screen.addLayer(grid);
-        screen.renderEngineStart();
+            // Если хоть одна анимация не завершена - возвращаемся на прошлый шаг
+            state.changes.forEach(element => {
+                if(element.instance.getParallelQueueSize() > 0)
+                    state.isMoving = true;
+            });
 
-        const group = game.getGroup(0, 0);
-        console.log(group);
+            if (!state.isMoving)
+            {
+                grid.updateItems();                 // Обновляем координаты элементов в сетке
+                const refilment = game.refill();    // Заполняем пустые ячейки, получаем массив новых ячеек
+
+                refilment.forEach(cell => {
+                    const tile = TileFactory(sprites, cell.type);               // Создаём тайл
+                    tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
+                    grid.addItem(tile, cell.x, cell.y);                         // Помещаем в узел сетки
+                });
+
+                grid.allowEventPropagation();       // Разрешаем распространение событий
+            }
+        }
     }
 }
