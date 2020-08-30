@@ -23,12 +23,13 @@ const screenWidth = 1000;       // Ширина экрана
 const screenHeight = 700;       // Высота экрана
 const gridWidth = 500;          // Ширина игрового поля
 const gridHeight = 500;         // Высота игрового поля
-const gridX = 50;              // Положение игрового поля по X
+const gridX = 50;               // Положение игрового поля по X
 const gridY = 150;              // Положение игрового поля по Y
 const cellsX = 10;              // Размер сетки поля по оси X
 const cellsY = 10;              // Размер сетки поля по оси Y
 const variety = 5;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
+const scoreToWin = 2000;        // Кол-во очков для выйгрыша
 
 const gameState = {
     isPressed: false,           // Флаг нажатия на тайл
@@ -38,7 +39,7 @@ const gameState = {
     address: undefined,         // Адрес ячейки, содержащей сущность
     group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
     changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
-    moves: 50,                  // Оставшееся количество ходов
+    moves: 20,                  // Оставшееся количество ходов
     score: 0                    // Количество очков
 }
 
@@ -56,7 +57,7 @@ const moves_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Ходов:'
 const moves_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
 const score_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Очки:');
 const score_label = new Label(ctx, 50, '#FFFFFF', 'Roboto Slab', 0);
-
+const gameover_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
 
 const score_panel = new BaseComponent(ctx);
 
@@ -82,7 +83,8 @@ function init()
     score_caption.setPosition(780, 370);
 
     score_label.setPosition(780, 410);
-
+    
+    gameover_label.setPosition(screenWidth / 2, screenHeight / 2);
     
     // Заполняем сетку тайлами
     for (let x = 0; x < cellsX; x++)
@@ -101,6 +103,7 @@ function init()
     screen.addLayer(moves_label);                             // Добавляем сетку в очередь движка отрисовки
     screen.addLayer(score_caption);
     screen.addLayer(score_label);
+    screen.addLayer(gameover_label);
     
     screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                         // Запускаем движок
@@ -151,7 +154,6 @@ function gameLoop(state, grid, game, sprites)
             state.moves--;              // Декрементим количество оставшихся ходов
 
             state.score += Math.pow(2, state.group.length);
-            score_label.setText(state.score);
         }
 
         // >>> Этап 2 - удаление группы тайлов
@@ -208,6 +210,13 @@ function gameLoop(state, grid, game, sprites)
                     grid.addItem(tile, cell.x, cell.y);                         // Помещаем в узел сетки
                 });
                 moves_label.setText(gameState.moves);     // Выводим количество оставшихся шагов
+                score_label.setText(state.score);
+                
+                if (state.score >= scoreToWin)
+                    gameover_label.setText('Вы победили');
+                else if (state.moves == 0)
+                    gameover_label.setText('Вы проиграли');
+                else
                 grid.allowEventPropagation();       // Разрешаем распространение событий
             }
         }
