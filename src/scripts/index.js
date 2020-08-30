@@ -29,7 +29,10 @@ const cellsX = 10;              // Размер сетки поля по оси 
 const cellsY = 10;              // Размер сетки поля по оси Y
 const variety = 5;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
+
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
+const movesLimit = 50;          // Лимит ходов
+const minGroup = 3;             // Минимальный размер группы на удаление
 
 const gameState = {
     isPressed: false,           // Флаг нажатия на тайл
@@ -39,7 +42,7 @@ const gameState = {
     address: undefined,         // Адрес ячейки, содержащей сущность
     group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
     changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
-    moves: 20,                  // Оставшееся количество ходов
+    moves: movesLimit,          // Оставшееся количество ходов
     score: 0                    // Количество очков
 }
 
@@ -142,9 +145,16 @@ function gameLoop(state, grid, game, sprites)
         // >>> Этап 1 - нажатие на тайл
         if (state.isPressed)
         {
-            grid.stopEventPropagation();                                    // Блокируем распространение событий
             state.address = grid.getInstanceAddress(state.target);          // Получаем адрес тайла в сетке
             state.group = game.getGroup(state.address.x, state.address.y);  // Получаем группу адресов ячеек на удаление
+
+            if (state.group.length < minGroup)
+            {
+                state.isPressed = false;
+                return;
+            }
+
+            grid.stopEventPropagation();                                    // Блокируем распространение событий
             state.group = state.group.map(element => grid.getCell(element.x, element.y));   // Получаем ячейки
 
             // Для каждого адреса из группы на удаление ищем тайл и применяем анимацию исчезновения
