@@ -42,6 +42,7 @@ const gameState = {
 }
 
 // Переменные
+let tile_template = undefined;  // Будущий образец тайла
 let sprites = undefined;        // Будущий массив со спрайтами тайлов
 
 // Создаём экран отрисовки, игровое поле и игровой движок
@@ -94,15 +95,21 @@ const tileClickHandler = state => {
 }
 
 // Асинхронно загружаем образец тайла и получаем набор спрайтов для тайлов
+
+const promises = [];
 Promise.all([
-    AsyncImageLoader(require('../images/tile.png')).then(img => {
-        AsyncRandomRepaint(img, variety, depth).then(repainted => sprites = repainted)}),
+    AsyncImageLoader(require('../images/tile.png')).then(img => tile_template = img),
     AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/moves.png')).then(img => moves.setBackgroundImage(img))
 ])
-    .then(() => init())
-    .catch(err => console.log(err))
-
+    .then(() => {
+        AsyncRandomRepaint(tile_template, variety, depth)
+            .then(repainted => {
+                sprites = repainted;
+                init();
+            })
+        })
+    .catch(err => console.log(err));
 
 // Функция игрового цикла
 function gameLoop(state, grid, game, sprites)
