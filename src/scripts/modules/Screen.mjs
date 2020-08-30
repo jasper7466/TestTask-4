@@ -1,6 +1,6 @@
 export class Screen
 {
-    constructor(container, width, height)
+    constructor(container, width, height, background_color = undefined)
     {
         this._container = container;                        // Родительский DOM-узел
         this._canvas = document.createElement('canvas');    // Холст
@@ -10,12 +10,10 @@ export class Screen
         this._renderQueue = [];                             // Очередь рендер-функций слоёв
         this._taskQueue = [];                               // Очередь прочих функций для циклического выполнения
         this._stopEngine = true;                            // Флаг остановки движка отрисовки
+        this._background_color = background_color;          // Цвет фона
 
         // На случай, если браузер не поддерживает тег <canvas>
         this._canvas.textContent = 'Sorry, but your browser is not supported :(';
-
-        // TODO: На время отладки
-        this._canvas.classList.add('screen');
 
         this._canvas.addEventListener('mousedown', (event) => this._mouseDown(event));
         this._canvas.addEventListener('mouseup', (event) => this._mouseUp(event));
@@ -55,7 +53,9 @@ export class Screen
     // Метод для полной очистки холста
     clear()
     {
-        this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        // this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        this._ctx.fillStyle = this._background_color;
+        this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
     }
 
     // Метод для добавления в конец очереди отрисовки новой рендер-функции

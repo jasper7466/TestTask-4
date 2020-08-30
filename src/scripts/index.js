@@ -47,7 +47,7 @@ let tile_template = undefined;  // Будущий образец тайла
 let sprites = undefined;        // Будущий массив со спрайтами тайлов
 
 // Создаём экран отрисовки, получаем контекст
-const screen = new Screen(holder, screenWidth, screenHeight);
+const screen = new Screen(holder, screenWidth, screenHeight, '#036');
 const ctx = screen.getContext();
 
 const grid = new Grid(ctx, cellsX, cellsY);
