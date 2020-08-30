@@ -79,6 +79,7 @@ export class Grid extends BaseComponent
         };
 
         this._collection.push(item);
+        this._collection.sort((a, b) => b.cellY - a.cellY);     // FIXME: частный случай
     }
 
     // Метод получения ячейки по её координатам
