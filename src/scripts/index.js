@@ -38,35 +38,50 @@ const gameState = {
     address: undefined,         // Адрес ячейки, содержащей сущность
     group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
     changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
-    moves: 50                   // Оставшееся количество ходов
+    moves: 50,                  // Оставшееся количество ходов
+    score: 0                    // Количество очков
 }
 
 // Переменные
 let tile_template = undefined;  // Будущий образец тайла
 let sprites = undefined;        // Будущий массив со спрайтами тайлов
 
-// Создаём экран отрисовки, игровое поле и игровой движок
+// Создаём экран отрисовки, получаем контекст
 const screen = new Screen(holder, screenWidth, screenHeight);
-const grid = new Grid(cellsX, cellsY);
-const game = new BlastEngine(cellsX, cellsY, variety);
-const moves = new Label(120, '#FFFFFF', 'Roboto Slab');
-
-// Получаем контекст
 const ctx = screen.getContext();
+
+const grid = new Grid(ctx, cellsX, cellsY);
+const game = new BlastEngine(cellsX, cellsY, variety);
+const moves_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Ходов:');
+const moves_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
+const score_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Очки:');
+const score_label = new Label(ctx, 50, '#FFFFFF', 'Roboto Slab', 0);
+
+
+const score_panel = new BaseComponent(ctx);
+
 
 // Функция инициализации и конфигурирования игры
 function init()
 {
     grid.setSize(gridWidth, gridHeight);    // Задаём размер игрового поля
     grid.setPosition(gridX, gridY);
-    grid.setContext(ctx);                   // и контекст
     game.randomFill();                      // Инициируем заполнение поля тайлами
 
-    moves.setPosition(700, 100);
-    moves.setContext(ctx);
-    moves.resizeOnBackground();
-    moves.scaleOnBackgroundWidth(300);
-    moves.setText(gameState.moves);
+    score_panel.setAnchor(0.5, 0.5);
+    score_panel.scaleOnBackgroundWidth(300);
+    score_panel.setPosition(780, 300);
+
+    moves_caption.setPosition(780, 160);
+
+    moves_label.setAnchor(0.5, 0.7);
+    moves_label.scaleOnBackgroundWidth(180);
+    moves_label.setText(gameState.moves);
+    moves_label.setPosition(780, 300);
+
+    score_caption.setPosition(780, 370);
+
+    score_label.setPosition(780, 410);
 
     
     // Заполняем сетку тайлами
@@ -81,7 +96,12 @@ function init()
     }
 
     screen.addLayer(grid);                              // Добавляем сетку в очередь движка отрисовки
-    screen.addLayer(moves);                             // Добавляем сетку в очередь движка отрисовки
+    screen.addLayer(score_panel);
+    screen.addLayer(moves_caption);
+    screen.addLayer(moves_label);                             // Добавляем сетку в очередь движка отрисовки
+    screen.addLayer(score_caption);
+    screen.addLayer(score_label);
+    
     screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                         // Запускаем движок
 }
@@ -100,7 +120,8 @@ const promises = [];
 Promise.all([
     AsyncImageLoader(require('../images/tile.png')).then(img => tile_template = img),
     AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/moves.png')).then(img => moves.setBackgroundImage(img))
+    AsyncImageLoader(require('../images/moves.png')).then(img => moves_label.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img))
 ])
     .then(() => {
         AsyncRandomRepaint(tile_template, variety, depth)
@@ -128,6 +149,9 @@ function gameLoop(state, grid, game, sprites)
             state.isPressed = false;    // Снимаем флаг нажатия на тайл
             state.isRemoving = true;    // Выставляем флаг ожидания удаления
             state.moves--;              // Декрементим количество оставшихся ходов
+
+            state.score += Math.pow(2, state.group.length);
+            score_label.setText(state.score);
         }
 
         // >>> Этап 2 - удаление группы тайлов
@@ -183,7 +207,7 @@ function gameLoop(state, grid, game, sprites)
                     tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
                     grid.addItem(tile, cell.x, cell.y);                         // Помещаем в узел сетки
                 });
-                moves.setText(gameState.moves);     // Выводим количество оставшихся шагов
+                moves_label.setText(gameState.moves);     // Выводим количество оставшихся шагов
                 grid.allowEventPropagation();       // Разрешаем распространение событий
             }
         }

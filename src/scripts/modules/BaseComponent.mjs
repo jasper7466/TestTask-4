@@ -1,9 +1,9 @@
 // Класс базового компонента
 export class BaseComponent
 {
-    constructor()
+    constructor(ctx)
     {
-        this._ctx = undefined;              // Контекст
+        this._ctx = ctx;                    // Контекст
         this._x = 0;                        // Положение по оси X
         this._y = 0;                        // Положение по оси Y
         this._width = 0;                    // Ширина

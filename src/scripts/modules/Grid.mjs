@@ -4,9 +4,9 @@ import { BaseComponent } from './BaseComponent.mjs';
 // Класс контейнера-сетки
 export class Grid extends BaseComponent
 {
-    constructor(cellsX, cellsY, ratio = 1)
+    constructor(ctx, cellsX, cellsY, ratio = 1)
     {
-        super();
+        super(ctx);
         this._cellsX = cellsX;      // Размер сетки по оси x (количество столбцов)
         this._cellsY = cellsY;      // Размер сетки по оси y (количество строк)
         this._ratio = ratio;        // Отношение сторон ячейки сетки
