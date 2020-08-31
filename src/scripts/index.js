@@ -28,7 +28,7 @@ const gridX = 50;               // Положение игрового поля 
 const gridY = 150;              // Положение игрового поля по Y
 const cellsX = 10;              // Размер сетки поля по оси X
 const cellsY = 10;              // Размер сетки поля по оси Y
-const variety = 5;              // Кол-во разновидностей тайлов
+const variety = 4;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
@@ -45,7 +45,8 @@ const gameState = {
     changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
     moves: movesLimit,          // Оставшееся количество ходов
     score: 0,                   // Количество очков
-    shuffles: 3                 // Оставшееся количество перемешиваний
+    shuffles: 3,                // Оставшееся количество перемешиваний
+    busters: 1                  // Оставшееся количество бустеров
 }
 
 // Переменные
@@ -64,6 +65,7 @@ const score_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Очки:');
 const score_label = new Label(ctx, 50, '#FFFFFF', 'Roboto Slab', 0);
 const gameover_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
 const shuffle_button = new Button(ctx, 20, '#FFFFFF', 'Roboto Slab', `Перемешать (x${gameState.shuffles})`);
+const buster_button = new Button(ctx, 20, '#FFFFFF', 'Roboto Slab', `Бустер (x${gameState.busters})`);
 
 const score_panel = new BaseComponent(ctx);
 
@@ -73,7 +75,6 @@ function init()
 {
     grid.setSize(gridWidth, gridHeight);    // Задаём размер игрового поля
     grid.setPosition(gridX, gridY);
-    game.randomFill();                      // Инициируем заполнение поля тайлами
 
     score_panel.setAnchor(0.5, 0.5);
     score_panel.scaleOnBackgroundWidth(300);
@@ -92,10 +93,15 @@ function init()
     
     gameover_label.setPosition(screenWidth / 2, screenHeight / 2);
 
-    shuffle_button.setPosition(500, 100);
+    shuffle_button.setPosition(780, 500);
     shuffle_button.setAnchor(0.5, 0.5);
     shuffle_button.scaleOnBackgroundWidth(200);
-    shuffle_button.setSize(200, 70);
+    shuffle_button.setSize(200, 60);
+
+    buster_button.setPosition(780, 570);
+    buster_button.setAnchor(0.5, 0.5);
+    buster_button.scaleOnBackgroundWidth(200);
+    buster_button.setSize(200, 60);
 
     
     // Заполняем сетку тайлами
@@ -103,7 +109,7 @@ function init()
     {
         for(let y = 0; y < cellsY; y++)
         {
-            const tile = TileFactory(sprites, game._field[x][y].type);  // Создаём тайл
+            const tile = TileFactory(sprites, game.getCell(x, y).type);       // Создаём тайл
             tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
             grid.addItem(tile, x, y);                                   // Помещаем в узел сетки
         }
@@ -117,6 +123,7 @@ function init()
     screen.addLayer(score_label);
     screen.addLayer(gameover_label);
     screen.addLayer(shuffle_button);
+    screen.addLayer(buster_button);
     
     screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                         // Запускаем движок
@@ -138,9 +145,18 @@ Promise.all([
     AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/moves.png')).then(img => moves_label.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/button2_base.png')).then(img => shuffle_button.setBaseImage(img)),
-    AsyncImageLoader(require('../images/button2_hover.png')).then(img => shuffle_button.setHoverImage(img)),
-    AsyncImageLoader(require('../images/button2_press.png')).then(img => shuffle_button.setPressImage(img))
+    AsyncImageLoader(require('../images/button2_base.png')).then(img => {
+        shuffle_button.setBaseImage(img);
+        buster_button.setBaseImage(img);
+    }),
+    AsyncImageLoader(require('../images/button2_hover.png')).then(img => {
+        shuffle_button.setHoverImage(img);
+        buster_button.setHoverImage(img);
+    }),
+    AsyncImageLoader(require('../images/button2_press.png')).then(img => {
+        shuffle_button.setPressImage(img);
+        buster_button.setPressImage(img);
+    })
 ])
     .then(() => {
         AsyncRandomRepaint(tile_template, variety, depth)
@@ -199,11 +215,11 @@ function gameLoop(state, grid, game, sprites)
                 state.changes = game.getChanges();  // Получаем список сместившихся клеток
                 // Применяем анимацию смещения
                 state.changes = state.changes.map(change => {
-                    const cell = grid.getCell(change.x, change.y);
-                    let loc = grid.getCellLocation(change.dx, change.dy);
+                    const cell = grid.getCell(change.dx, change.dy);
+                    let loc = grid.getCellLocation(change.x, change.y);
                     cell.instance.addParallelTask(move(loc.x, loc.y, 100, 300));
-                    cell.updateX = change.dx;       // Задём координаты
-                    cell.updateY = change.dy;       // для обновления
+                    cell.updateX = change.x;       // Задём координаты
+                    cell.updateY = change.y;       // для обновления
                     return cell;
                 });
                 game.fixChanges();                  // Уравниваем текущие координаты с новыми
@@ -224,8 +240,8 @@ function gameLoop(state, grid, game, sprites)
 
             if (!state.isMoving)
             {
-                grid.updateItems();                 // Обновляем координаты элементов в сетке
-                const refilment = game.refill();    // Заполняем пустые ячейки, получаем массив новых ячеек
+                grid.updateItems();                     // Обновляем координаты элементов в сетке
+                const refilment = game.randomFill();    // Заполняем пустые ячейки, получаем массив новых ячеек
 
                 refilment.forEach(cell => {
                     const tile = TileFactory(sprites, cell.type);               // Создаём тайл
