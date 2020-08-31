@@ -38,10 +38,10 @@ export function move(x, y, speed, accel)
         control._x += dirX * (speed + accel) / 60;
         control._y += dirY * (speed + accel) / 60;
 
-        if (control._x < x)
+        if (control._x * dirX > x * dirX)
             control._x = x;
             
-        if (control._y > y)
+        if (control._y * dirY > y * dirY)
             control._y = y;
 
         if (control._x == x && control._y == y)

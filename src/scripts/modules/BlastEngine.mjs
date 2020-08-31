@@ -171,6 +171,9 @@ export class BlastEngine
     // Метод для случайного перемешивания игрового поля
     shuffle()
     {
-        
+        this._field.forEach(cell => {
+            let ind = RandomIntInclusive(0, this._field.length - 1);
+            this.swapCells(cell.x, cell.y, this._field[ind].x, this._field[ind].y);
+        });
     }
 }
