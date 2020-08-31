@@ -139,11 +139,15 @@ export class BaseComponent
     // Метод проверки нахождения координат внутри хитбокса компонета
     _isHit(x, y)
     {
+        // Вычисляем смещение относительно точки привязки
+        const aX = this._width * this._anchorX;
+        const aY = this._height * this._anchorY;
+
         // Вычисляем абсолютное значение оффсетов для текущих параметров
-        const left = this._x + this._width * this._hitbox.left;
-        const right = this._x + this._width - this._width * this._hitbox.right;
-        const top = this._y + this._height * this._hitbox.top;
-        const bottom = this._y + this._height - this._height * this._hitbox.bottom;
+        const left = this._x + this._width * this._hitbox.left - aX;
+        const right = this._x + this._width - this._width * this._hitbox.right - aX;
+        const top = this._y + this._height * this._hitbox.top - aY;
+        const bottom = this._y + this._height - this._height * this._hitbox.bottom - aY;
 
         const hitX = x >= left && x < right;
         const hitY = y >= top && y < bottom;

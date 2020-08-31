@@ -93,7 +93,7 @@ function init()
     gameover_label.setPosition(screenWidth / 2, screenHeight / 2);
 
     shuffle_button.setPosition(500, 100);
-    shuffle_button.setAnchor(0, 0);
+    shuffle_button.setAnchor(0.5, 0.5);
     shuffle_button.scaleOnBackgroundWidth(200);
     shuffle_button.setSize(200, 70);
 
