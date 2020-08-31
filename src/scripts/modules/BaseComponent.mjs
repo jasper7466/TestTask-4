@@ -30,7 +30,7 @@ export class BaseComponent
         this._removeHandler = undefined;    // Коллбэк-обработчик события "удаления компонента"
 
         this._isPressed = false;            // Флаг нажатия
-        this._isHoveredIn = false;          // Флаг нахождения курсора внутри хитбокса
+        this._isHovered = false;            // Флаг нахождения курсора внутри хитбокса
 
         this._serialTaskQueue = [];         // Очередь последовательных задач
         this._parallelTaskQueue = [];       // Очередь параллельных задач
@@ -182,6 +182,39 @@ export class BaseComponent
         this._onClick();            // Если попали - значит был "клик"
     }
 
+    // Метод-обработчик события "движение мыши"
+    onMove(x, y)
+    {
+        let hit = this._isHit(x, y);        // Нахождение в зоне хитбокса
+
+        if (!this._isHovered && hit)      // "Вход"
+        {
+            if (this._hoverInHandler)
+            {
+                this._isHovered = true;
+                this._hoverInHandler();
+            }
+            return;
+        }
+
+        if (this._isHovered && !hit)      // "Выход"
+        {
+            if (this._hoverOutHandler)
+            {
+                this._isHovered = false;
+                this._hoverOutHandler();
+            }
+            return;
+        }
+
+        if (this._isHovered && hit)       // "Внутри"
+        {
+            if (this._hoverHandler)
+                this._hoverHandler();
+            return;
+        }
+    }
+
     // Метод-обработчик события "клик"
     _onClick()
     {
@@ -206,6 +239,36 @@ export class BaseComponent
     setRemoveHandler(callback)
     {
         this._removeHandler = callback;
+    }
+
+    // Метод установки обработчика события входа курсора в зону хитбокса
+    setHoverInHandler(callback)
+    {
+        this._hoverInHandler = callback;
+    }
+
+    // Метод установки обработчика события выхода курсора из зоны хитбокса
+    setHoverOutHandler(callback)
+    {
+        this._hoverOutHandler = callback;
+    }
+
+    // Метод установки обработчика события нахождения курсора в зоне хитбокса
+    setHoverHandler(callback)
+    {
+        this._hoverHandler = callback;
+    }
+
+    // Метод установки обработчика события нажатия
+    setPressHandler(callback)
+    {
+        this._pressHandler = callback;
+    }
+
+    // Метод установки обработчика события отпускания
+    setReleaseHandler(callback)
+    {
+        this._releaseHandler = callback;
     }
 
     // Метод добавления функции в очередь параллельного выполнения

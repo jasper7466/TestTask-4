@@ -9,6 +9,7 @@ import { Grid } from './modules/Grid.mjs';
 import { BlastEngine } from './modules/BlastEngine.mjs';
 import { BaseComponent } from './modules/BaseComponent.mjs';
 import { Label } from './modules/Label.mjs';
+import { Button } from './modules/Button.mjs';
 import { AsyncRandomRepaint } from './utilities/AsyncImageToner.mjs';
 import { AsyncImageLoader } from './utilities/AsyncImageLoader.mjs';
 import { TileFactory } from './utilities/TileFactory.mjs';
@@ -43,7 +44,8 @@ const gameState = {
     group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
     changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
     moves: movesLimit,          // Оставшееся количество ходов
-    score: 0                    // Количество очков
+    score: 0,                   // Количество очков
+    shuffles: 3                 // Оставшееся количество перемешиваний
 }
 
 // Переменные
@@ -61,6 +63,7 @@ const moves_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
 const score_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Очки:');
 const score_label = new Label(ctx, 50, '#FFFFFF', 'Roboto Slab', 0);
 const gameover_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
+const shuffle_button = new Button(ctx, 20, '#FFFFFF', 'Roboto Slab', `Перемешать (x${gameState.shuffles})`);
 
 const score_panel = new BaseComponent(ctx);
 
@@ -88,6 +91,12 @@ function init()
     score_label.setPosition(780, 410);
     
     gameover_label.setPosition(screenWidth / 2, screenHeight / 2);
+
+    shuffle_button.setPosition(500, 100);
+    shuffle_button.setAnchor(0, 0);
+    shuffle_button.scaleOnBackgroundWidth(200);
+    shuffle_button.setSize(200, 70);
+
     
     // Заполняем сетку тайлами
     for (let x = 0; x < cellsX; x++)
@@ -107,6 +116,7 @@ function init()
     screen.addLayer(score_caption);
     screen.addLayer(score_label);
     screen.addLayer(gameover_label);
+    screen.addLayer(shuffle_button);
     
     screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                         // Запускаем движок
@@ -127,7 +137,10 @@ Promise.all([
     AsyncImageLoader(require('../images/tile.png')).then(img => tile_template = img),
     AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/moves.png')).then(img => moves_label.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img))
+    AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/button2_base.png')).then(img => shuffle_button.setBaseImage(img)),
+    AsyncImageLoader(require('../images/button2_hover.png')).then(img => shuffle_button.setHoverImage(img)),
+    AsyncImageLoader(require('../images/button2_press.png')).then(img => shuffle_button.setPressImage(img))
 ])
     .then(() => {
         AsyncRandomRepaint(tile_template, variety, depth)

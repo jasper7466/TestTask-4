@@ -17,6 +17,7 @@ export class Screen
 
         this._canvas.addEventListener('mousedown', (event) => this._mouseDown(event));
         this._canvas.addEventListener('mouseup', (event) => this._mouseUp(event));
+        this._canvas.addEventListener('mousemove', (event) => this._mouseMove(event));
 
         // Размещаем в родительском DOM-узле
         this.deploy();
@@ -110,5 +111,14 @@ export class Screen
         let y = event.offsetY;
         
         this._renderQueue.forEach(control => control.onRelease(x, y));
+    }
+
+    // Обработчик события движения мыши
+    _mouseMove(event)
+    {
+        let x = event.offsetX;
+        let y = event.offsetY;
+        
+        this._renderQueue.forEach(control => control.onMove(x, y));
     }
 }
