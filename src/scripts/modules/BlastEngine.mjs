@@ -3,11 +3,12 @@ import { RandomIntInclusive } from '../utilities/Random.mjs';
 // Класс игровой логики
 export class BlastEngine
 {
-    constructor(cellsX, cellsY, variety)
+    constructor(cellsX, cellsY, variety, minGroup)
     {
         this._cellsX = cellsX;          // Количество ячеек по оси X
         this._cellsY = cellsY;          // Количество ячеек по оси Y
         this._variety = variety - 1;    // Количество вариаций типов ячеек
+        this._minGroup = minGroup;      // Минимальный размер группы
 
         this._field = [];               // Будущий "двумерный" массив игрового поля
         this._empty_cell = -1;          // Тип, присваиваемый пустой ячейке
@@ -175,5 +176,27 @@ export class BlastEngine
             let ind = RandomIntInclusive(0, this._field.length - 1);
             this.swapCells(cell.x, cell.y, this._field[ind].x, this._field[ind].y);
         });
+    }
+
+    // Метод поиска возможных ходов
+    getMoves()
+    {
+        let moves = 0;
+        let field_copy = this._field.slice(0);
+
+        while (field_copy.length > 0)
+        {
+
+            const cell = field_copy[0];
+            const group = this.getGroup(cell.x, cell.y);
+
+            if (group.length >= this._minGroup)
+                moves++;
+
+            group.forEach(element => {
+                field_copy = field_copy.filter(item => item.x != element.x || item.y != element.y)
+            });
+        }
+        return moves;
     }
 }

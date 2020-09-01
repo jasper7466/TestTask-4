@@ -26,9 +26,9 @@ const gridWidth = 500;          // Ширина игрового поля
 const gridHeight = 500;         // Высота игрового поля
 const gridX = 50;               // Положение игрового поля по X
 const gridY = 150;              // Положение игрового поля по Y
-const cellsX = 10;              // Размер сетки поля по оси X
-const cellsY = 10;              // Размер сетки поля по оси Y
-const variety = 4;              // Кол-во разновидностей тайлов
+const cellsX = 7;              // Размер сетки поля по оси X
+const cellsY = 7;              // Размер сетки поля по оси Y
+const variety = 6;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
@@ -59,14 +59,16 @@ const screen = new Screen(holder, screenWidth, screenHeight, '#036');
 const ctx = screen.getContext();
 
 const grid = new Grid(ctx, cellsX, cellsY);
-const game = new BlastEngine(cellsX, cellsY, variety);
-const moves_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Ходов:');
+const game = new BlastEngine(cellsX, cellsY, variety, minGroup);
+const moves_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Ходы:');
 const moves_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
 const score_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Очки:');
 const score_label = new Label(ctx, 50, '#FFFFFF', 'Roboto Slab', 0);
 const gameover_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
+const groups_label = new Label(ctx, 20, '#FFFFFF', 'Roboto Slab');
 const shuffle_button = new Button(ctx, 20, '#FFFFFF', 'Roboto Slab', `Перемешать (x${gameState.shuffles})`);
 const buster_button = new Button(ctx, 20, '#FFFFFF', 'Roboto Slab', `Бустер (x${gameState.busters})`);
+
 
 const score_panel = new BaseComponent(ctx);
 
@@ -93,6 +95,8 @@ function init()
     score_label.setPosition(780, 410);
     
     gameover_label.setPosition(screenWidth / 2, screenHeight / 2);
+
+    groups_label.setPosition(150, 130);
 
     shuffle_button.setPosition(780, 500);
     shuffle_button.setAnchor(0.5, 0.5);
@@ -123,12 +127,15 @@ function init()
     screen.addLayer(moves_label);                             // Добавляем сетку в очередь движка отрисовки
     screen.addLayer(score_caption);
     screen.addLayer(score_label);
+    screen.addLayer(groups_label);
     screen.addLayer(gameover_label);
     screen.addLayer(shuffle_button);
     screen.addLayer(buster_button);
     
     screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                         // Запускаем движок
+
+    groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
 }
 
 // Обработчик события клика по тайлу
@@ -281,6 +288,10 @@ function gameLoop(state, grid, game, sprites)
                 {
                     game.fixChanges();                  // Уравниваем текущие координаты с новыми
                     uiUnlock();                         // Разблокировка интерфейса
+                    const moves = game.getMoves();
+                    groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
+                    if (state.shuffles == 0 && moves == 0)
+                        gameover_label.setText('Вы проиграли');
                 }
             }
         }
