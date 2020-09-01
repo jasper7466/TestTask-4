@@ -23,7 +23,7 @@ export class BaseComponent
         this._clickHandler = undefined;     // Коллбэк-обработчик события "клик"
         this._pressHandler = undefined;     // Коллбэк-обработчик события "нажатие"
         this._releaseHandler = undefined;   // Коллбэк-обработчик события "отпускание"
-        this._hoverHandler = undefined;     // Коллбэк-обработчик события "парение"
+        this._hoverHandler = undefined;     // Коллбэк-обработчик события "наведение"
         this._hoverInHandler = undefined;   // Коллбэк-обработчик события "вхождение в зону"
         this._hoverOutHandler = undefined;  // Коллбэк-обработчик события "выход из зоны"
 
@@ -31,6 +31,7 @@ export class BaseComponent
 
         this._isPressed = false;            // Флаг нажатия
         this._isHovered = false;            // Флаг нахождения курсора внутри хитбокса
+        this._eEnabled = true;              // Флаг разрешения событий
 
         this._serialTaskQueue = [];         // Очередь последовательных задач
         this._parallelTaskQueue = [];       // Очередь параллельных задач
@@ -165,7 +166,7 @@ export class BaseComponent
 
         this._isPressed = true;     // Иначе - выставляем флаг нажатия
         
-        if (this._pressHandler)     // Вызываем обработчик нажатия (если задан)
+        if (this._pressHandler && this._eEnabled)     // Вызываем обработчик нажатия
             this._pressHandler(this);
     }
 
@@ -177,7 +178,7 @@ export class BaseComponent
         
         this._isPressed = false;    // Если были нажаты - очищаем флаг
 
-        if (this._releaseHandler)   // Вызываем обработчик отпускания (если задан)
+        if (this._releaseHandler && this._eEnabled)   // Вызываем обработчик отпускания
             this._releaseHandler(this);
 
         if (!this._isHit(x, y))     // Если не попали в хитбокс - выходим
@@ -191,9 +192,9 @@ export class BaseComponent
     {
         let hit = this._isHit(x, y);        // Нахождение в зоне хитбокса
 
-        if (!this._isHovered && hit)      // "Вход"
+        if (!this._isHovered && hit)        // "Вход"
         {
-            if (this._hoverInHandler)
+            if (this._hoverInHandler && this._eEnabled)
             {
                 this._isHovered = true;
                 this._hoverInHandler();
@@ -201,9 +202,9 @@ export class BaseComponent
             return;
         }
 
-        if (this._isHovered && !hit)      // "Выход"
+        if (this._isHovered && !hit)        // "Выход"
         {
-            if (this._hoverOutHandler)
+            if (this._hoverOutHandler && this._eEnabled)
             {
                 this._isHovered = false;
                 this._hoverOutHandler();
@@ -211,9 +212,9 @@ export class BaseComponent
             return;
         }
 
-        if (this._isHovered && hit)       // "Внутри"
+        if (this._isHovered && hit)         // "Внутри"
         {
-            if (this._hoverHandler)
+            if (this._hoverHandler && this._eEnabled)
                 this._hoverHandler();
             return;
         }
@@ -222,14 +223,14 @@ export class BaseComponent
     // Метод-обработчик события "клик"
     _onClick()
     {
-        if (this._clickHandler)     // Вызываем обработчик клика (если задан)
+        if (this._clickHandler && this._eEnabled)     // Вызываем обработчик клика
             this._clickHandler(this);
     }
 
     // Метод удаления компонента
     onRemove()
     {
-        if (this._removeHandler)    // Вызываем обработчик удаления (если задан)
+        if (this._removeHandler && this._eEnabled)    // Вызываем обработчик удаления
             this._clickHandler(this);
     }
 
@@ -297,6 +298,18 @@ export class BaseComponent
     getParallelQueueSize()
     {
         return this._parallelTaskQueue.length;
+    }
+
+    // Метод запрета событий
+    disableEvents()
+    {
+        this._eEnabled = false;
+    }
+
+    // Метод разрешения событий
+    enableEvents()
+    {
+        this._eEnabled = true;
     }
 
     // Метод отрисовки

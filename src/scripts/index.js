@@ -39,6 +39,7 @@ const gameState = {
     isPressed: false,           // Флаг нажатия на тайл
     isRemoving: false,          // Флаг "удаление в процессе"
     isMoving: false,            // Флаг "перемещение в процессе"
+    isShuffling: false,         // Флаг "перемешивание в процессе"
     target: undefined,          // Сущность, на которой произошло событие нажатия
     address: undefined,         // Адрес ячейки, содержащей сущность
     group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
@@ -97,6 +98,7 @@ function init()
     shuffle_button.setAnchor(0.5, 0.5);
     shuffle_button.scaleOnBackgroundWidth(200);
     shuffle_button.setSize(200, 60);
+    shuffle_button.setClickHandler(shuffleClickHandler(gameState));
 
     buster_button.setPosition(780, 570);
     buster_button.setAnchor(0.5, 0.5);
@@ -137,9 +139,30 @@ const tileClickHandler = state => {
     }
 }
 
-// Асинхронно загружаем образец тайла и получаем набор спрайтов для тайлов
+// Обработчик события клика по кнопке "Перемешать"
+const shuffleClickHandler = state => {
+    return target => {
+        if (state.shuffles == 0)
+            return
+        state.shuffles--;
+        target.setText(`Перемешать (x${gameState.shuffles})`);
+        state.isShuffling = true;
+    }
+}
 
-const promises = [];
+// Блокировка пользовательского интерфейса
+const uiLock = () => {
+    grid.stopEventPropagation();    // Блокируем распространение событий на поле
+    shuffle_button.disableEvents(); // Блокируем события кнопки "Перемешать"
+}
+
+// Разблокировка пользовательского интерфейса
+const uiUnlock = () => {
+    grid.allowEventPropagation();   // Разрешаем распространение событий на поле
+    shuffle_button.enableEvents();  // Разрешаем события кнопки "Перемешать"
+}
+
+// Асинхронно загружаем образец тайла и получаем набор спрайтов для тайлов
 Promise.all([
     AsyncImageLoader(require('../images/tile.png')).then(img => tile_template = img),
     AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
@@ -183,7 +206,7 @@ function gameLoop(state, grid, game, sprites)
                 return;
             }
 
-            grid.stopEventPropagation();                                    // Блокируем распространение событий
+            uiLock();   // Блокируем интерфейс
             state.group = state.group.map(element => grid.getCell(element.x, element.y));   // Получаем ячейки
 
             // Для каждого адреса из группы на удаление ищем тайл и применяем анимацию исчезновения
@@ -222,7 +245,6 @@ function gameLoop(state, grid, game, sprites)
                     cell.updateY = change.y;       // для обновления
                     return cell;
                 });
-                game.fixChanges();                  // Уравниваем текущие координаты с новыми
                 state.isMoving = true;              // Переходим на этап перемещения
             }
         }
@@ -256,8 +278,28 @@ function gameLoop(state, grid, game, sprites)
                 else if (state.moves == 0)
                     gameover_label.setText('Вы проиграли');
                 else
-                grid.allowEventPropagation();       // Разрешаем распространение событий
+                {
+                    game.fixChanges();                  // Уравниваем текущие координаты с новыми
+                    uiUnlock();                         // Разблокировка интерфейса
+                }
             }
+        }
+
+        if (state.isShuffling)
+        {            
+            uiLock();
+            game.shuffle();
+            state.changes = [];
+            game._field.forEach(cell => {
+                const tile = grid.getCell(cell.dx, cell.dy);
+                let loc = grid.getCellLocation(cell.x, cell.y);
+                tile.instance.addParallelTask(move(loc.x, loc.y, 100, 300));
+                tile.updateX = cell.x;       // Задём координаты
+                tile.updateY = cell.y;       // для обновления
+                state.changes.push(tile);
+            });
+            state.isShuffling = false;
+            state.isMoving = true;
         }
     }
 }
