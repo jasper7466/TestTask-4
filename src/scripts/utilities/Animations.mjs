@@ -34,15 +34,19 @@ export function move(x, y, speed, accel)
             dirY = (control._y < y) ? 1 : -1;
         }
         
-        // Выполняем смещение
-        control._x += dirX * (speed + accel) / 60;
-        control._y += dirY * (speed + accel) / 60;
+        let pos = control.getPosition();    // Получаем текущее положение
 
-        if (control._x * dirX > x * dirX)
-            control._x = x;
+        // Выполняем смещение
+        pos.x += dirX * (speed + accel) / 60;
+        pos.y += dirY * (speed + accel) / 60;
+
+        control.setPosition(pos.x, pos.y);
+
+        if (pos.x * dirX > x * dirX)
+            control.setX(x);
             
-        if (control._y * dirY > y * dirY)
-            control._y = y;
+        if (pos.y * dirY > y * dirY)
+            control.setY(y);
 
         if (control._x == x && control._y == y)
             return true;

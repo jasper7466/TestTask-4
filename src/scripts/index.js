@@ -10,6 +10,7 @@ import { BlastEngine } from './modules/BlastEngine.mjs';
 import { BaseComponent } from './modules/BaseComponent.mjs';
 import { Label } from './modules/Label.mjs';
 import { Button } from './modules/Button.mjs';
+import { ProgressBar } from './modules/ProgressBar.mjs';
 import { AsyncRandomRepaint } from './utilities/AsyncImageToner.mjs';
 import { AsyncImageLoader } from './utilities/AsyncImageLoader.mjs';
 import { TileFactory } from './utilities/TileFactory.mjs';
@@ -35,6 +36,7 @@ const scoreToWin = 2000;        // Кол-во очков для выйгрыш�
 const movesLimit = 50;          // Лимит ходов
 const minGroup = 3;             // Минимальный размер группы на удаление
 
+// Объект для хранения состояния игры
 const gameState = {
     isPressed: false,           // Флаг нажатия на тайл
     isRemoving: false,          // Флаг "удаление в процессе"
@@ -58,20 +60,19 @@ let sprites = undefined;        // Будущий массив со спрайт
 const screen = new Screen(holder, screenWidth, screenHeight, '#036');
 const ctx = screen.getContext();
 
+// Создаём остальные логические/графические сущности
 const grid = new Grid(ctx, cellsX, cellsY);
 const game = new BlastEngine(cellsX, cellsY, variety, minGroup);
-const moves_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Ходы:');
-const moves_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
-const score_caption = new Label(ctx, 30, '#FFFFFF', 'Roboto Slab', 'Очки:');
-const score_label = new Label(ctx, 50, '#FFFFFF', 'Roboto Slab', 0);
-const gameover_label = new Label(ctx, 90, '#FFFFFF', 'Roboto Slab');
-const groups_label = new Label(ctx, 20, '#FFFFFF', 'Roboto Slab');
-const shuffle_button = new Button(ctx, 20, '#FFFFFF', 'Roboto Slab', `Перемешать (x${gameState.shuffles})`);
-const buster_button = new Button(ctx, 20, '#FFFFFF', 'Roboto Slab', `Бустер (x${gameState.busters})`);
-
-
+const moves_caption = new Label(ctx, 30, '#FFF', 'Roboto Slab', 'Ходы:');
+const moves_label = new Label(ctx, 90, '#FFF', 'Roboto Slab');
+const score_caption = new Label(ctx, 30, '#FFF', 'Roboto Slab', 'Очки:');
+const score_label = new Label(ctx, 50, '#FFF', 'Roboto Slab', 0);
+const gameover_label = new Label(ctx, 90, '#FFF', 'Roboto Slab');
+const groups_label = new Label(ctx, 20, '#FFF', 'Roboto Slab');
+const shuffle_button = new Button(ctx, 20, '#FFF', 'Roboto Slab', `Перемешать (x${gameState.shuffles})`);
+const buster_button = new Button(ctx, 20, '#FFF', 'Roboto Slab', `Бустер (x${gameState.busters})`);
+const progress = new ProgressBar(ctx);
 const score_panel = new BaseComponent(ctx);
-
 
 // Функция инициализации и конфигурирования игры
 function init()
@@ -109,6 +110,12 @@ function init()
     buster_button.scaleOnBackgroundWidth(200);
     buster_button.setSize(200, 60);
 
+    progress.setSize(200, 30);
+    progress.setAnchor(0.5, 0.5);
+    progress.setPosition(150, 50);
+    progress.setBorder(3);
+    progress.setProgress(0);
+
     
     // Заполняем сетку тайлами
     for (let x = 0; x < cellsX; x++)
@@ -131,6 +138,7 @@ function init()
     screen.addLayer(gameover_label);
     screen.addLayer(shuffle_button);
     screen.addLayer(buster_button);
+    screen.addLayer(progress);
     
     screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                         // Запускаем движок
@@ -174,6 +182,8 @@ Promise.all([
     AsyncImageLoader(require('../images/tile.png')).then(img => tile_template = img),
     AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/moves.png')).then(img => moves_label.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/bar_back.png')).then(img => progress.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/bar.png')).then(img => progress.setBarImage(img)),
     AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/button2_base.png')).then(img => {
         shuffle_button.setBaseImage(img);
@@ -288,6 +298,7 @@ function gameLoop(state, grid, game, sprites)
                 {
                     game.fixChanges();                  // Уравниваем текущие координаты с новыми
                     uiUnlock();                         // Разблокировка интерфейса
+                    progress.setProgress(state.score / scoreToWin);
                     const moves = game.getMoves();
                     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
                     if (state.shuffles == 0 && moves == 0)
