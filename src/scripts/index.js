@@ -87,59 +87,75 @@ const progress_label = new Label(ctx, 20, '#FFF', 'Roboto Slab', 'Прогрес
 // Функция инициализации и конфигурирования игры
 function init()
 {
-    grid.setSize(gridWidth, gridHeight);    // Задаём размер игрового поля
+    // Игровое поле
+    grid.setSize(gridWidth, gridHeight);
     grid.setPosition(gridX, gridY);
 
+    // Панель информации
     score_panel.setAnchor(0.5, 0.5);
     score_panel.scaleOnBackgroundWidth(300);
     score_panel.setPosition(780, 300);
 
+    // Заголовок "Ходы"
     moves_caption.setPosition(780, 160);
 
+    // Поле вывода количества ходов
     moves_label.setAnchor(0.5, 0.7);
     moves_label.scaleOnBackgroundWidth(180);
     moves_label.setText(gameState.moves);
     moves_label.setPosition(780, 300);
 
+    // Заголовок "Очки"
     score_caption.setPosition(780, 370);
 
+    // Поле вывода количества очков
     score_label.setPosition(780, 410);
     
+    // Поле вывода сообщений
     banner_label.setPosition(screenWidth / 2, screenHeight / 2);
 
+    // Поле вывода количества доступных ходов
     groups_label.setPosition(150, 130);
+    groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
 
+    // Кнопка "Перемешать"
     shuffle_button.setPosition(780, 500);
     shuffle_button.setAnchor(0.5, 0.5);
     shuffle_button.scaleOnBackgroundWidth(200);
     shuffle_button.setSize(200, 60);
     shuffle_button.setClickHandler(shuffleClickHandler(gameState));
 
+    // Кнопка "Бустер"
     booster_button.setPosition(780, 570);
     booster_button.setAnchor(0.5, 0.5);
     booster_button.scaleOnBackgroundWidth(200);
     booster_button.setSize(200, 60);
     booster_button.setClickHandler(boosterClickHandler(gameState));
 
+    // Кнопка "Пауза"
     pause_button.setPosition(930, 50);
     pause_button.setAnchor(0.5, 0.5);
     pause_button.scaleOnBackgroundWidth(60);
     pause_button.setClickHandler(pauseClickHandler());
 
+    // Полоса прогресса
     progress.setSize(300, 25);
     progress.setAnchor(0.5, 0.5);
     progress.setPosition(screenWidth / 2, 45);
     progress.setBorder(3);
     progress.setProgress(0);
 
+    // Верхняя панель
     top_panel.setSize(700, 100);
     top_panel.setAnchor(0.5, 0);
     top_panel.setPosition(screenWidth / 2, 0);
 
+    // Панель прогресса
     progress_panel.setSize(400, 70);
     progress_panel.setAnchor(0.5, 0);
     progress_panel.setPosition(screenWidth / 2, 0);
 
+    // Заголовок "Прогресс"
     progress_label.setPosition(screenWidth / 2, 15);
     
     // Заполняем сетку тайлами
@@ -153,10 +169,11 @@ function init()
         }
     }
 
-    screen.addLayer(grid);                              // Добавляем сетку в очередь движка отрисовки
+    // Добавляем элементы в очередь движка отрисовки в нужном порядке
+    screen.addLayer(grid);
     screen.addLayer(score_panel);
     screen.addLayer(moves_caption);
-    screen.addLayer(moves_label);                             // Добавляем сетку в очередь движка отрисовки
+    screen.addLayer(moves_label);
     screen.addLayer(score_caption);
     screen.addLayer(score_label);
     screen.addLayer(groups_label);
@@ -169,10 +186,9 @@ function init()
     screen.addLayer(progress);
     screen.addLayer(pause_button);
     
-    screen.addTask(gameLoop(gameState, grid, game, sprites));   // Добавляем циклический вызов функции игрового цикла
-    screen.renderEngineStart();                                 // Запускаем движок
-
-    groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
+    // Добавляем циклический вызов функции игрового цикла и запускаем движок
+    screen.addTask(gameLoop(gameState, grid, game, sprites));
+    screen.renderEngineStart();
 }
 
 // Обработчик события клика по тайлу
@@ -235,7 +251,7 @@ const uiUnlock = () => {
         booster_button.enableEvents();  // Разрешаем события кнопки "Бустер"
 }
 
-// Асинхронно загружаем образец тайла и получаем набор спрайтов для тайлов
+// Асинхронно загружаем необходимые изображения
 Promise.all([
     AsyncImageLoader(require('../images/tile.png')).then(img => tile_template = img),
     AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
@@ -265,8 +281,8 @@ Promise.all([
     .then(() => {
         AsyncRandomRepaint(tile_template, variety, depth)
             .then(repainted => {
-                sprites = repainted;
-                init();
+                sprites = repainted;    // Массив перекрашенных спрайтов тайлов
+                init();                 // Вызов инициализации
             })
         })
     .catch(err => console.log(err));
@@ -281,19 +297,19 @@ function gameLoop(state, grid, game, sprites)
             state.address = grid.getInstanceAddress(state.target);          // Получаем адрес тайла в сетке
 
             // Получаем группу адресов ячеек на удаление
-            if (state.isBoosted)
+            if (state.isBoosted)                                // Если включен режим "Бустер"
             {
                 state.group = game.getRadius(state.address.x, state.address.y, boostR);
                 state.boosters--;
                 booster_button.setText(`Бустер (x${gameState.boosters})`);
             }
-            else
+            else                                                // Если обычный тайл или "супер-тайл"
             {
                 state.supercell = game.isSupercell(state.address.x, state.address.y);
                 state.group = game.getGroup(state.address.x, state.address.y);
             }
 
-            if (state.group.length < minGroup)
+            if (state.group.length < minGroup)                  // Ограничение на минимальную группу тайлов
             {
                 state.isPressed = false;
                 return;
@@ -334,8 +350,8 @@ function gameLoop(state, grid, game, sprites)
                     const cell = grid.getCell(change.dx, change.dy);
                     let loc = grid.getCellLocation(change.x, change.y);
                     cell.instance.addSerialTask(move(loc.x, loc.y, 100, 300));
-                    cell.updateX = change.x;       // Задём координаты
-                    cell.updateY = change.y;       // для обновления
+                    cell.updateX = change.x;        // Задём координаты
+                    cell.updateY = change.y;        // для обновления
                     return cell;
                 });
                 state.isMoving = true;              // Переходим на этап перемещения
@@ -363,10 +379,11 @@ function gameLoop(state, grid, game, sprites)
                     tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
                     grid.addItem(tile, cell.x, cell.y);                         // Помещаем в узел сетки
                 });
-                moves_label.setText(gameState.moves);     // Выводим количество оставшихся шагов
-                score_label.setText(state.score);
-                progress.setProgress(state.score / scoreToWin);
+                moves_label.setText(gameState.moves);           // Выводим количество оставшихся шагов,
+                score_label.setText(state.score);               // очков
+                progress.setProgress(state.score / scoreToWin); // и обновляем прогресс
                 
+                // Обработка ситуации проигрыша/выигрыша по очкам и ходам
                 if (state.score >= scoreToWin)
                     banner_label.setText('Вы победили');
                 else if (state.moves == 0)
@@ -374,39 +391,46 @@ function gameLoop(state, grid, game, sprites)
                 else
                 {
                     game.fixChanges();                  // Уравниваем текущие координаты с новыми
-                    const moves = game.getMoves();
+                    const moves = game.getMoves();      // Пересчитываем доступные ходы
                     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
+
+                    // Обработка ситуации появления "супер-тайла"
                     if (state.group.length >= superGroup && !state.isBoosted && !state.supercell && !state.isShuffling)
                     {
                         game.setSuperCell(state.address.x, state.address.y);
                         grid.getCell(state.address.x, state.address.y).instance.addParallelTask(blink(20));
                     }
 
+                    // Обработка ситуации проигрыша по отсуттсвию ходов и бустеров
                     if (!state.shuffles && !state.boosters && !moves)
                         banner_label.setText('Вы проиграли');
 
+                    // Сброс флагов
                     state.isBoosted = false;
                     booster_button.reset();
                     state.isShuffling = false;
-                    uiUnlock();                         // Разблокировка интерфейса
+
+                    // Разблокировка интерфейса
+                    uiUnlock()
                 }
             }
         }
 
+        // Перемешивание поля
         if (state.isShuffling && !state.isMoving)
         {            
-            uiLock();
-            game.shuffle();
-            state.changes = [];
+            uiLock();                       // Блокируем интерфейс
+            game.shuffle();                 // Перемешиваем поле
+            state.changes = [];             // Очищаем массив с изменёнными ячейками
             game._field.forEach(cell => {
-                const tile = grid.getCell(cell.dx, cell.dy);
-                let loc = grid.getCellLocation(cell.x, cell.y);
-                tile.instance.addSerialTask(move(loc.x, loc.y, 100, 300));
-                tile.updateX = cell.x;       // Задём координаты
-                tile.updateY = cell.y;       // для обновления
+                const tile = grid.getCell(cell.dx, cell.dy);                // Получаем ячейку
+                let loc = grid.getCellLocation(cell.x, cell.y);             // Получаем новые координаты
+                tile.instance.addSerialTask(move(loc.x, loc.y, 100, 300));  // Запускаем анимацию перемещения
+                tile.updateX = cell.x;                                      // Задём координаты
+                tile.updateY = cell.y;                                      // для обновления
                 state.changes.push(tile);
             });
-            state.isMoving = true;
+            state.isMoving = true;          // Идём на этап перемещения
         }
     }
 }
