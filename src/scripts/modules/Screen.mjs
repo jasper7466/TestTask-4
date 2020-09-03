@@ -1,6 +1,6 @@
 export class Screen
 {
-    constructor(container, width, height)
+    constructor(container, width, height, background_color = undefined)
     {
         this._container = container;                        // Родительский DOM-узел
         this._canvas = document.createElement('canvas');    // Холст
@@ -10,15 +10,15 @@ export class Screen
         this._renderQueue = [];                             // Очередь рендер-функций слоёв
         this._taskQueue = [];                               // Очередь прочих функций для циклического выполнения
         this._stopEngine = true;                            // Флаг остановки движка отрисовки
+        this._background_color = background_color;          // Цвет фона
+        this._background_image = undefined;                 // Фоновое изображение (имеет приоритет выше, чем фоновый цвет)
 
         // На случай, если браузер не поддерживает тег <canvas>
         this._canvas.textContent = 'Sorry, but your browser is not supported :(';
 
-        // TODO: На время отладки
-        this._canvas.classList.add('screen');
-
         this._canvas.addEventListener('mousedown', (event) => this._mouseDown(event));
         this._canvas.addEventListener('mouseup', (event) => this._mouseUp(event));
+        this._canvas.addEventListener('mousemove', (event) => this._mouseMove(event));
 
         // Размещаем в родительском DOM-узле
         this.deploy();
@@ -46,6 +46,12 @@ export class Screen
         this._container.appendChild(this._canvas);
     }
 
+    // Метод установки фонового изображения
+    setBackgroundImage(img)
+    {
+        this._background_image = img;
+    }
+
     // Метод для открепления холста от родительского контейнера
     retract()
     {
@@ -56,6 +62,13 @@ export class Screen
     clear()
     {
         this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        if (this._background_image)
+            this._ctx.drawImage(this._background_image, 0, 0, this._canvas.width, this._canvas.height);
+        else if (this._background_color)
+        {
+            this._ctx.fillStyle = this._background_color;
+            this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
+        }
     }
 
     // Метод для добавления в конец очереди отрисовки новой рендер-функции
@@ -110,5 +123,14 @@ export class Screen
         let y = event.offsetY;
         
         this._renderQueue.forEach(control => control.onRelease(x, y));
+    }
+
+    // Обработчик события движения мыши
+    _mouseMove(event)
+    {
+        let x = event.offsetX;
+        let y = event.offsetY;
+        
+        this._renderQueue.forEach(control => control.onMove(x, y));
     }
 }

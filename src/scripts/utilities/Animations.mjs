@@ -20,6 +20,25 @@ export function fade(start, stop, speed, accel)
     }
 }
 
+// "Мерцание"
+export function blink(freq)
+{
+    const stop = 60 / freq;
+    let state = false;
+    let accum = 0;
+
+    return control => {
+        accum += 1;
+        if (accum == stop)
+        {
+            accum = 0;
+            state = !state;
+        }
+        control._alpha = state * 1;
+        return false;
+    }
+}
+
 // Функция перемещения компонента в заданные координаты
 export function move(x, y, speed, accel)
 {
@@ -34,15 +53,19 @@ export function move(x, y, speed, accel)
             dirY = (control._y < y) ? 1 : -1;
         }
         
-        // Выполняем смещение
-        control._x += dirX * (speed + accel) / 60;
-        control._y += dirY * (speed + accel) / 60;
+        let pos = control.getPosition();    // Получаем текущее положение
 
-        if (control._x < x)
-            control._x = x;
+        // Выполняем смещение
+        pos.x += dirX * (speed + accel) / 60;
+        pos.y += dirY * (speed + accel) / 60;
+
+        control.setPosition(pos.x, pos.y);
+
+        if (pos.x * dirX > x * dirX)
+            control.setX(x);
             
-        if (control._y > y)
-            control._y = y;
+        if (pos.y * dirY > y * dirY)
+            control.setY(y);
 
         if (control._x == x && control._y == y)
             return true;

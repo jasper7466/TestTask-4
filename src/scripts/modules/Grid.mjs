@@ -4,9 +4,9 @@ import { BaseComponent } from './BaseComponent.mjs';
 // Класс контейнера-сетки
 export class Grid extends BaseComponent
 {
-    constructor(cellsX, cellsY, ratio = 1)
+    constructor(ctx, cellsX, cellsY, ratio = 1)
     {
-        super();
+        super(ctx);
         this._cellsX = cellsX;      // Размер сетки по оси x (количество столбцов)
         this._cellsY = cellsY;      // Размер сетки по оси y (количество строк)
         this._ratio = ratio;        // Отношение сторон ячейки сетки
@@ -14,6 +14,8 @@ export class Grid extends BaseComponent
         this._collection = [];      // Хранилище элементов сетки
         this._stepX = 0;            // Шаг сетки по оси x
         this._stepY = 0;            // Шаг сетки по оси y
+        this._paddingV = 0.1;       // Внутренний отступ по вертикали   FIXME:
+        this._paddingH = 0.1;       // Внутренний отступ по горизонтали FIXME:
 
         this._removeQueue = [];     // Очередь на удаление
 
@@ -23,8 +25,8 @@ export class Grid extends BaseComponent
     // Метод пересчёта шага сетки
     _gridRecalc()
     {
-        this._stepX = this._width / this._cellsX;
-        this._stepY = this._height / this._cellsY;
+        this._stepX = (this._width - this._width * this._paddingH) / this._cellsX;
+        this._stepY = (this._height - this._height * this._paddingV) / this._cellsY;
         // this._alignX = (this._width - this._stepX * this._cellsX) / 2;
         // this._alignY = (this._height - this._stepY * this._cellsY) / 2;
     }
@@ -59,15 +61,20 @@ export class Grid extends BaseComponent
         });
     }
 
+    // Метод сортировки коллекции
+    sortCollection()
+    {
+        this._collection.sort((a, b) => b.cellY - a.cellY);     // FIXME: частный случай
+    }
+
     // Метод добавления элемента
     addItem(instance, cellX, cellY)
     {
-        const x = this._stepX * cellX;
-        const y = this._stepY * cellY;
+        const loc = this.getCellLocation(cellX, cellY);
 
         instance.setContext(this._ctx);
-        instance.setPosition(x, y);
-        instance.scaleOnBackgroundWidth(this._stepX);   // FIXME:
+        instance.setPosition(loc.x, loc.y);
+        instance.scaleOnBackgroundWidth(this._stepX);   // FIXME: частный случай
 
         const item = {
             instance: instance,     // Ссылка на сущность
@@ -78,6 +85,7 @@ export class Grid extends BaseComponent
         };
 
         this._collection.push(item);
+        // this.sortCollection();
     }
 
     // Метод получения ячейки по её координатам
@@ -86,11 +94,21 @@ export class Grid extends BaseComponent
         const item = this._collection.find(item => item.cellX === cellX && item.cellY === cellY);
         return item;
     }
+
     // Метод получения указателя на сущность из ячейки по её координатам
     getInstance(cellX, cellY)
     {
         const cell = this.getCell(cellX, cellY);
         return cell.instance;
+    }
+
+    // Метод получения координат узла
+    getCellLocation(cellX, cellY)
+    {
+        return {
+            x: this._x + this._stepX * cellX + this._width * this._paddingV / 2,
+            y: this._y + this._stepY * cellY + this._height * this._paddingH / 2
+        };
     }
 
     // Метод добаления элемента в очередь на удаление
@@ -130,6 +148,7 @@ export class Grid extends BaseComponent
     // Метод отрисовки
     render()
     {
+        this.sortCollection();
         // Удаляем элементы, стоящие в очереди
         this._removeQueue.forEach(item => {
             item.onRemove();
