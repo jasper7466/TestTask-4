@@ -217,7 +217,8 @@ export class BaseComponent
         if (!this._isHit(x, y))     // Если не попали в хитбокс - выходим
             return;
 
-        this._onClick();            // Если попали - значит был "клик"
+        if (this._eEnabled)
+            this._onClick();        // Если попали - значит был "клик"
     }
 
     // Метод-обработчик события "движение мыши"

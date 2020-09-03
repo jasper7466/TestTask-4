@@ -31,13 +31,13 @@ const gridX = 50;               // Положение игрового поля 
 const gridY = 150;              // Положение игрового поля по Y
 const cellsX = 7;               // Размер сетки поля по оси X
 const cellsY = 7;               // Размер сетки поля по оси Y
-const variety = 3;              // Кол-во разновидностей тайлов
+const variety = 4;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
 const movesLimit = 50;          // Лимит ходов
 const minGroup = 3;             // Минимальный размер группы на удаление
-const superGroup = 3;           // Минимальный размер группы для создания супер-тайла
+const superGroup = 4;           // Минимальный размер группы для создания супер-тайла
 const boostR = 1;               // Радиус действия бустера
 
 // Объект для хранения состояния игры
@@ -46,15 +46,16 @@ const gameState = {
     isRemoving: false,          // Флаг "удаление в процессе"
     isMoving: false,            // Флаг "перемещение в процессе"
     isShuffling: false,         // Флаг "перемешивание в процессе"
+    isBoosted: false,           // Флаг включения бустера
     isSupercell: false,         // Флаг "супер-клетка"
     target: undefined,          // Сущность, на которой произошло событие нажатия
     address: undefined,         // Адрес ячейки, содержащей сущность
-    group: [],           // Выбранная группа ячеек (адреса/ссылки сущностей)
+    group: [],                  // Выбранная группа ячеек (адреса/ссылки сущностей)
     changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
     moves: movesLimit,          // Оставшееся количество ходов
     score: 0,                   // Количество очков
     shuffles: 3,                // Оставшееся количество перемешиваний
-    boosters: 1                 // Оставшееся количество бустеров
+    boosters: 2                 // Оставшееся количество бустеров
 }
 
 // Переменные
@@ -117,6 +118,7 @@ function init()
     booster_button.setAnchor(0.5, 0.5);
     booster_button.scaleOnBackgroundWidth(200);
     booster_button.setSize(200, 60);
+    booster_button.setClickHandler(boosterClickHandler(gameState));
 
     progress.setSize(300, 25);
     progress.setAnchor(0.5, 0.5);
@@ -174,11 +176,21 @@ const tileClickHandler = state => {
     }
 }
 
+// Обработчик события клика по кнопке "Бустер"
+const boosterClickHandler = state => {
+    return target => {
+        if (target.getState() && state.boosters > 0)
+            state.isBoosted = true;
+        else
+            state.isBoosted = false;
+    }
+}
+
 // Обработчик события клика по кнопке "Перемешать"
 const shuffleClickHandler = state => {
     return target => {
         if (state.shuffles == 0)
-            return
+            return;
         state.shuffles--;
         target.setText(`Перемешать (x${gameState.shuffles})`);
         state.isShuffling = true;
@@ -196,7 +208,8 @@ const uiLock = () => {
 const uiUnlock = () => {
     grid.allowEventPropagation();   // Разрешаем распространение событий на поле
     shuffle_button.enableEvents();  // Разрешаем события кнопки "Перемешать"
-    booster_button.enableEvents();  // Разрешаем события кнопки "Бустер"
+    if (gameState.boosters > 0)
+        booster_button.enableEvents();  // Разрешаем события кнопки "Бустер"
 }
 
 // Асинхронно загружаем образец тайла и получаем набор спрайтов для тайлов
@@ -241,7 +254,7 @@ function gameLoop(state, grid, game, sprites)
             state.address = grid.getInstanceAddress(state.target);          // Получаем адрес тайла в сетке
 
             // Получаем группу адресов ячеек на удаление
-            if (booster_button.getState())
+            if (state.isBoosted)
             {
                 state.group = game.getRadius(state.address.x, state.address.y, boostR);
                 state.boosters--;
@@ -336,7 +349,7 @@ function gameLoop(state, grid, game, sprites)
                     game.fixChanges();                  // Уравниваем текущие координаты с новыми
                     const moves = game.getMoves();
                     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
-                    if (state.group.length >= superGroup && !booster_button.getState() && !state.supercell)
+                    if (state.group.length >= superGroup && !state.isBoosted && !state.supercell)
                     {
                         game.setSuperCell(state.address.x, state.address.y);
                         console.log(state.address.x, state.address.y);
@@ -346,6 +359,7 @@ function gameLoop(state, grid, game, sprites)
                     if (state.shuffles == 0 && moves == 0)
                         gameover_label.setText('Вы проиграли');
 
+                    state.isBoosted = false;
                     booster_button.reset();
                     uiUnlock();                         // Разблокировка интерфейса
                 }
