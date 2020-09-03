@@ -11,6 +11,24 @@ export class ToggleButton extends Button
         this._isFixed = false;              // Состояние фиксации
     }
 
+    // Метод получения состояния кнопки
+    getState()
+    {
+        return this._isFixed;
+    }
+
+    // Метод установки состояния "зафиксирована"
+    fix()
+    {
+        this._isFixed = true;
+    }
+
+    // Метод сброса состояния фиксации
+    reset()
+    {
+        this._isFixed = false;
+    }
+
     // Переопределённый метод-обработчик события "клик"
     _onClick()
     {
