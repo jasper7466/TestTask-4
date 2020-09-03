@@ -20,6 +20,25 @@ export function fade(start, stop, speed, accel)
     }
 }
 
+// "Мерцание"
+export function blink(freq)
+{
+    const stop = 60 / freq;
+    let state = false;
+    let accum = 0;
+
+    return control => {
+        accum += 1;
+        if (accum == stop)
+        {
+            accum = 0;
+            state = !state;
+        }
+        control._alpha = state * 1;
+        return false;
+    }
+}
+
 // Функция перемещения компонента в заданные координаты
 export function move(x, y, speed, accel)
 {

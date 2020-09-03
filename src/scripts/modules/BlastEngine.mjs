@@ -3,12 +3,13 @@ import { RandomIntInclusive } from '../utilities/Random.mjs';
 // Класс игровой логики
 export class BlastEngine
 {
-    constructor(cellsX, cellsY, variety, minGroup)
+    constructor(cellsX, cellsY, variety, minGroup, superGroup)
     {
         this._cellsX = cellsX;          // Количество ячеек по оси X
         this._cellsY = cellsY;          // Количество ячеек по оси Y
         this._variety = variety - 1;    // Количество вариаций типов ячеек
         this._minGroup = minGroup;      // Минимальный размер группы
+        this._superGroup = superGroup;  // Минимальный размер группы
 
         this._field = [];               // Будущий "двумерный" массив игрового поля
         this._empty_cell = -1;          // Тип, присваиваемый пустой ячейке

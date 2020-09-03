@@ -19,6 +19,7 @@ import { TileFactory } from './utilities/TileFactory.mjs';
 // Анимационные функции
 import { fade } from './utilities/Animations.mjs';
 import { move } from './utilities/Animations.mjs';
+import { blink } from './utilities/Animations.mjs';
 
 // Константы
 const holder = document.querySelector('.main'); // Родительский узел для размещения экрана отрисовки
@@ -36,6 +37,7 @@ const depth = 200;              // Ограничение на значение 
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
 const movesLimit = 50;          // Лимит ходов
 const minGroup = 3;             // Минимальный размер группы на удаление
+const superGroup = 9;           // Минимальный размер группы для создания супер-тайла
 
 // Объект для хранения состояния игры
 const gameState = {
@@ -63,7 +65,7 @@ const ctx = screen.getContext();
 
 // Создаём остальные логические/графические сущности
 const grid = new Grid(ctx, cellsX, cellsY);
-const game = new BlastEngine(cellsX, cellsY, variety, minGroup);
+const game = new BlastEngine(cellsX, cellsY, variety, minGroup, superGroup);
 const moves_caption = new Label(ctx, 30, '#FFF', 'Roboto Slab', 'Ходы:');
 const moves_label = new Label(ctx, 90, '#FFF', 'Roboto Slab');
 const score_caption = new Label(ctx, 30, '#FFF', 'Roboto Slab', 'Очки:');
