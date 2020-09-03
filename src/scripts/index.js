@@ -73,10 +73,11 @@ const moves_caption = new Label(ctx, 30, '#FFF', 'Roboto Slab', 'Ходы:');
 const moves_label = new Label(ctx, 90, '#FFF', 'Roboto Slab');
 const score_caption = new Label(ctx, 30, '#FFF', 'Roboto Slab', 'Очки:');
 const score_label = new Label(ctx, 50, '#FFF', 'Roboto Slab', 0);
-const gameover_label = new Label(ctx, 90, '#FFF', 'Roboto Slab');
+const banner_label = new Label(ctx, 90, '#FFF', 'Roboto Slab');
 const groups_label = new Label(ctx, 20, '#FFF', 'Roboto Slab');
 const shuffle_button = new Button(ctx, 20, '#FFF', 'Roboto Slab', `Перемешать (x${gameState.shuffles})`);
 const booster_button = new ToggleButton(ctx, 20, '#FFF', 'Roboto Slab', `Бустер (x${gameState.boosters})`);
+const pause_button = new ToggleButton(ctx);
 const progress = new ProgressBar(ctx);
 const score_panel = new BaseComponent(ctx);
 const top_panel = new BaseComponent(ctx);
@@ -104,7 +105,7 @@ function init()
 
     score_label.setPosition(780, 410);
     
-    gameover_label.setPosition(screenWidth / 2, screenHeight / 2);
+    banner_label.setPosition(screenWidth / 2, screenHeight / 2);
 
     groups_label.setPosition(150, 130);
 
@@ -119,6 +120,11 @@ function init()
     booster_button.scaleOnBackgroundWidth(200);
     booster_button.setSize(200, 60);
     booster_button.setClickHandler(boosterClickHandler(gameState));
+
+    pause_button.setPosition(930, 50);
+    pause_button.setAnchor(0.5, 0.5);
+    pause_button.scaleOnBackgroundWidth(60);
+    pause_button.setClickHandler(pauseClickHandler());
 
     progress.setSize(300, 25);
     progress.setAnchor(0.5, 0.5);
@@ -154,13 +160,14 @@ function init()
     screen.addLayer(score_caption);
     screen.addLayer(score_label);
     screen.addLayer(groups_label);
-    screen.addLayer(gameover_label);
+    screen.addLayer(banner_label);
     screen.addLayer(shuffle_button);
     screen.addLayer(booster_button);
     screen.addLayer(top_panel);
     screen.addLayer(progress_panel);
     screen.addLayer(progress_label);
     screen.addLayer(progress);
+    screen.addLayer(pause_button);
     
     screen.addTask(gameLoop(gameState, grid, game, sprites));   // Добавляем циклический вызов функции игрового цикла
     screen.renderEngineStart();                                 // Запускаем движок
@@ -173,6 +180,22 @@ const tileClickHandler = state => {
     return target => {
         state.isPressed = true;     // Выставляем флаг нажатия
         state.target = target;      // Указываем ссылку на сущность
+    }
+}
+
+// Обработчик события клика по кнопке "Пауза"
+const pauseClickHandler = () => {
+    return target => {
+        if (target.getState())
+        {
+            banner_label.setText('Пауза');
+            uiLock();
+        }
+        else
+        {
+            banner_label.setText('');
+            uiUnlock();
+        }
     }
 }
 
@@ -222,6 +245,9 @@ Promise.all([
     AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/top_panel.png')).then(img => top_panel.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/progress_panel.png')).then(img => progress_panel.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/pause_base.png')).then(img => pause_button.setBaseImage(img)),
+    AsyncImageLoader(require('../images/pause_hover.png')).then(img => pause_button.setHoverImage(img)),
+    AsyncImageLoader(require('../images/pause_press.png')).then(img => pause_button.setPressImage(img)),
     AsyncImageLoader(require('../images/button2_base.png')).then(img => {
         shuffle_button.setBaseImage(img);
         booster_button.setBaseImage(img);
@@ -341,9 +367,9 @@ function gameLoop(state, grid, game, sprites)
                 progress.setProgress(state.score / scoreToWin);
                 
                 if (state.score >= scoreToWin)
-                    gameover_label.setText('Вы победили');
+                    banner_label.setText('Вы победили');
                 else if (state.moves == 0)
-                    gameover_label.setText('Вы проиграли');
+                    banner_label.setText('Вы проиграли');
                 else
                 {
                     game.fixChanges();                  // Уравниваем текущие координаты с новыми
@@ -356,7 +382,7 @@ function gameLoop(state, grid, game, sprites)
                     }
 
                     if (!state.shuffles && !state.boosters && !moves)
-                        gameover_label.setText('Вы проиграли');
+                        banner_label.setText('Вы проиграли');
 
                     state.isBoosted = false;
                     booster_button.reset();
