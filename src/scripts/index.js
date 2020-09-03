@@ -73,6 +73,9 @@ const shuffle_button = new Button(ctx, 20, '#FFF', 'Roboto Slab', `Переме�
 const buster_button = new Button(ctx, 20, '#FFF', 'Roboto Slab', `Бустер (x${gameState.busters})`);
 const progress = new ProgressBar(ctx);
 const score_panel = new BaseComponent(ctx);
+const top_panel = new BaseComponent(ctx);
+const progress_panel = new BaseComponent(ctx);
+const progress_label = new Label(ctx, 20, '#FFF', 'Roboto Slab', 'Прогресс');
 
 // Функция инициализации и конфигурирования игры
 function init()
@@ -110,11 +113,21 @@ function init()
     buster_button.scaleOnBackgroundWidth(200);
     buster_button.setSize(200, 60);
 
-    progress.setSize(200, 30);
+    progress.setSize(300, 25);
     progress.setAnchor(0.5, 0.5);
-    progress.setPosition(150, 50);
+    progress.setPosition(screenWidth / 2, 45);
     progress.setBorder(3);
     progress.setProgress(0);
+
+    top_panel.setSize(700, 100);
+    top_panel.setAnchor(0.5, 0);
+    top_panel.setPosition(screenWidth / 2, 0);
+
+    progress_panel.setSize(400, 70);
+    progress_panel.setAnchor(0.5, 0);
+    progress_panel.setPosition(screenWidth / 2, 0);
+
+    progress_label.setPosition(screenWidth / 2, 15);
 
     
     // Заполняем сетку тайлами
@@ -138,6 +151,9 @@ function init()
     screen.addLayer(gameover_label);
     screen.addLayer(shuffle_button);
     screen.addLayer(buster_button);
+    screen.addLayer(top_panel);
+    screen.addLayer(progress_panel);
+    screen.addLayer(progress_label);
     screen.addLayer(progress);
     
     screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
@@ -185,6 +201,8 @@ Promise.all([
     AsyncImageLoader(require('../images/bar_back.png')).then(img => progress.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/bar.png')).then(img => progress.setBarImage(img)),
     AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/top_panel.png')).then(img => top_panel.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/progress_panel.png')).then(img => progress_panel.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/button2_base.png')).then(img => {
         shuffle_button.setBaseImage(img);
         buster_button.setBaseImage(img);
@@ -232,7 +250,7 @@ function gameLoop(state, grid, game, sprites)
             state.isRemoving = true;    // Выставляем флаг ожидания удаления
             state.moves--;              // Декрементим количество оставшихся ходов
 
-            state.score += Math.pow(2, state.group.length);
+            state.score += Math.pow(4, state.group.length);
         }
 
         // >>> Этап 2 - удаление группы тайлов
@@ -289,6 +307,7 @@ function gameLoop(state, grid, game, sprites)
                 });
                 moves_label.setText(gameState.moves);     // Выводим количество оставшихся шагов
                 score_label.setText(state.score);
+                progress.setProgress(state.score / scoreToWin);
                 
                 if (state.score >= scoreToWin)
                     gameover_label.setText('Вы победили');
@@ -298,7 +317,6 @@ function gameLoop(state, grid, game, sprites)
                 {
                     game.fixChanges();                  // Уравниваем текущие координаты с новыми
                     uiUnlock();                         // Разблокировка интерфейса
-                    progress.setProgress(state.score / scoreToWin);
                     const moves = game.getMoves();
                     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
                     if (state.shuffles == 0 && moves == 0)

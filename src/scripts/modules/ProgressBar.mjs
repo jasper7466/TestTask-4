@@ -70,12 +70,12 @@ export class ProgressBar extends BaseComponent
     render()
     {
         // Функция отрисовки полосы прогресса
-        const drw = () => this._ctx.drawImage(this._bar, this._dx, this._dy, this._width, this._height);
+        const drawer = () => this._ctx.drawImage(this._bar, this._dx, this._dy, this._width, this._height);
         
         // Отрисовываем фон
         this._clipper(this._progressX, this._progressY, this._outerRadius, this._progressWidth, () => super.render());
 
         // Отрисовываем полосу прогресса
-        this._clipper(this._progressX, this._progressY, this._innerRadius, this._progressStop, drw);
+        this._clipper(this._progressX, this._progressY, this._innerRadius, this._progressStop, drawer);
     }
 }
