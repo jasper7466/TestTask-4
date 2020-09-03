@@ -31,13 +31,14 @@ const gridX = 50;               // Положение игрового поля 
 const gridY = 150;              // Положение игрового поля по Y
 const cellsX = 7;               // Размер сетки поля по оси X
 const cellsY = 7;               // Размер сетки поля по оси Y
-const variety = 6;              // Кол-во разновидностей тайлов
+const variety = 3;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
 const movesLimit = 50;          // Лимит ходов
 const minGroup = 3;             // Минимальный размер группы на удаление
-const superGroup = 9;           // Минимальный размер группы для создания супер-тайла
+const superGroup = 3;           // Минимальный размер группы для создания супер-тайла
+const boostR = 1;               // Радиус действия бустера
 
 // Объект для хранения состояния игры
 const gameState = {
@@ -45,9 +46,10 @@ const gameState = {
     isRemoving: false,          // Флаг "удаление в процессе"
     isMoving: false,            // Флаг "перемещение в процессе"
     isShuffling: false,         // Флаг "перемешивание в процессе"
+    isSupercell: false,         // Флаг "супер-клетка"
     target: undefined,          // Сущность, на которой произошло событие нажатия
     address: undefined,         // Адрес ячейки, содержащей сущность
-    group: undefined,           // Выбранная группа ячеек (адреса/ссылки сущностей)
+    group: [],           // Выбранная группа ячеек (адреса/ссылки сущностей)
     changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
     moves: movesLimit,          // Оставшееся количество ходов
     score: 0,                   // Количество очков
@@ -241,13 +243,15 @@ function gameLoop(state, grid, game, sprites)
             // Получаем группу адресов ячеек на удаление
             if (booster_button.getState())
             {
-                state.group = game.getRow(state.address.x, state.address.y);
+                state.group = game.getRadius(state.address.x, state.address.y, boostR);
                 state.boosters--;
-                booster_button.reset();
                 booster_button.setText(`Бустер (x${gameState.boosters})`);
             }
             else
+            {
+                state.supercell = game.isSupercell(state.address.x, state.address.y);
                 state.group = game.getGroup(state.address.x, state.address.y);
+            }
 
             if (state.group.length < minGroup)
             {
@@ -259,12 +263,12 @@ function gameLoop(state, grid, game, sprites)
             state.group = state.group.map(element => grid.getCell(element.x, element.y));   // Получаем ячейки
 
             // Для каждого адреса из группы на удаление ищем тайл и применяем анимацию исчезновения
-            state.group.forEach(cell => cell.instance.addParallelTask(fade(1, 0.4, 1, 2)));
+            state.group.forEach(cell => cell.instance.addSerialTask(fade(1, 0.4, 1, 2)));
             state.isPressed = false;    // Снимаем флаг нажатия на тайл
             state.isRemoving = true;    // Выставляем флаг ожидания удаления
             state.moves--;              // Декрементим количество оставшихся ходов
 
-            state.score += Math.pow(4, state.group.length);
+            state.score += Math.pow(state.group.length, 2);
         }
 
         // >>> Этап 2 - удаление группы тайлов
@@ -274,10 +278,10 @@ function gameLoop(state, grid, game, sprites)
 
             // Если хоть одна анимация не завершена - возвращаемся на прошлый шаг
             state.group.forEach(element => {
-                if (element.instance.getParallelQueueSize() > 0)
+                if (element.instance.getSerialQueueSize() > 0)
                     state.isRemoving = true;
                 else
-                    grid.removeItem(element.instance);  // Если анимация завершена - удаляем элемент из сетки FIXME:
+                    grid.removeItem(element.instance);  // Если анимация завершена - удаляем элемент из сетки
             });
 
             // Если анимации завершены
@@ -289,7 +293,7 @@ function gameLoop(state, grid, game, sprites)
                 state.changes = state.changes.map(change => {
                     const cell = grid.getCell(change.dx, change.dy);
                     let loc = grid.getCellLocation(change.x, change.y);
-                    cell.instance.addParallelTask(move(loc.x, loc.y, 100, 300));
+                    cell.instance.addSerialTask(move(loc.x, loc.y, 100, 300));
                     cell.updateX = change.x;       // Задём координаты
                     cell.updateY = change.y;       // для обновления
                     return cell;
@@ -299,13 +303,13 @@ function gameLoop(state, grid, game, sprites)
         }
 
         // >>> Этап 3 - перемещение тайлов
-        if (state.isMoving)
+        else if (state.isMoving)
         {
             state.isMoving = false;                 // Пробуем очистить состояние
 
             // Если хоть одна анимация не завершена - возвращаемся на прошлый шаг
             state.changes.forEach(element => {
-                if(element.instance.getParallelQueueSize() > 0)
+                if(element.instance.getSerialQueueSize() > 0)
                     state.isMoving = true;
             });
 
@@ -330,11 +334,20 @@ function gameLoop(state, grid, game, sprites)
                 else
                 {
                     game.fixChanges();                  // Уравниваем текущие координаты с новыми
-                    uiUnlock();                         // Разблокировка интерфейса
                     const moves = game.getMoves();
                     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
+                    if (state.group.length >= superGroup && !booster_button.getState() && !state.supercell)
+                    {
+                        game.setSuperCell(state.address.x, state.address.y);
+                        console.log(state.address.x, state.address.y);
+                        grid.getCell(state.address.x, state.address.y).instance.addParallelTask(blink(20));
+                    }
+
                     if (state.shuffles == 0 && moves == 0)
                         gameover_label.setText('Вы проиграли');
+
+                    booster_button.reset();
+                    uiUnlock();                         // Разблокировка интерфейса
                 }
             }
         }

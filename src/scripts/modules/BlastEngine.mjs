@@ -13,6 +13,7 @@ export class BlastEngine
 
         this._field = [];               // Будущий "двумерный" массив игрового поля
         this._empty_cell = -1;          // Тип, присваиваемый пустой ячейке
+        this._super_cell = variety;     // Тип, присваиваемый "супер-ячейке"
         this._group = undefined;        // Выбранная группа однотипных ячеек
 
         this.init();
@@ -50,6 +51,17 @@ export class BlastEngine
     getCell(x, y)
     {
         return this._field.find(cell => cell.x == x && cell.y == y);
+    }
+
+    // Метод установки типа "супер-клетка"
+    setSuperCell(x, y)
+    {
+        this.getCell(x, y).type = this._super_cell;
+    }
+
+    isSupercell(x, y)
+    {
+        return this.getCell(x, y).type == this._super_cell;
     }
 
     // Метод рекурсивного поиска группы однотипных соседних ячеек по координатам одной ячейки
@@ -100,7 +112,45 @@ export class BlastEngine
     // Метод выдачи группы найденных ячеек во внешние интерфейсы
     getGroup(cellX, cellY)
     {
-        this._group = this._getGroup(cellX, cellY);
+        if (this.getCell(cellX, cellY).type == this._super_cell)
+            this._group = this.getCross(cellX, cellY);
+        else
+            this._group = this._getGroup(cellX, cellY);
+        return this._group;
+    }
+
+    // Метод для получения группы ячеек строки и столбца на пересечении
+    getCross(cellX, cellY)
+    {
+        this._group = [];
+        for (let x = 0; x < this._cellsX; x++)
+        {
+            this._group.push({x: x, y: cellY});
+        }
+        for (let y = 0; y < this._cellsY; y++)
+        {
+            this._group.push({x: cellX, y: y});
+        }
+        return this._group;
+    }
+
+    // Метод получения группы в радиусе от искомой
+    getRadius(cellX, cellY, R)
+    {
+        const fromX = Math.max(cellX - R, 0);
+        const toX = Math.min(cellX + R, this._cellsX - 1);
+        const fromY = Math.max(cellY - R, 0);
+        const toY = Math.min(cellY + R, this._cellsY - 1);
+
+        this._group = [];
+
+        for (let x = fromX; x <= toX; x++)
+        {
+            for (let y = fromY; y <= toY; y++)
+            {
+                this._group.push({x: x, y: y});
+            }
+        }
         return this._group;
     }
 
@@ -200,9 +250,8 @@ export class BlastEngine
 
         while (field_copy.length > 0)
         {
-
             const cell = field_copy[0];
-            const group = this.getGroup(cell.x, cell.y);
+            const group = this._getGroup(cell.x, cell.y);
 
             if (group.length >= this._minGroup)
                 moves++;
