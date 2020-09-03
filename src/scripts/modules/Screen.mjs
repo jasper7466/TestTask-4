@@ -11,6 +11,7 @@ export class Screen
         this._taskQueue = [];                               // Очередь прочих функций для циклического выполнения
         this._stopEngine = true;                            // Флаг остановки движка отрисовки
         this._background_color = background_color;          // Цвет фона
+        this._background_image = undefined;                 // Фоновое изображение (имеет приоритет выше, чем фоновый цвет)
 
         // На случай, если браузер не поддерживает тег <canvas>
         this._canvas.textContent = 'Sorry, but your browser is not supported :(';
@@ -45,6 +46,12 @@ export class Screen
         this._container.appendChild(this._canvas);
     }
 
+    // Метод установки фонового изображения
+    setBackgroundImage(img)
+    {
+        this._background_image = img;
+    }
+
     // Метод для открепления холста от родительского контейнера
     retract()
     {
@@ -54,9 +61,14 @@ export class Screen
     // Метод для полной очистки холста
     clear()
     {
-        // this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-        this._ctx.fillStyle = this._background_color;
-        this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
+        this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        if (this._background_image)
+            this._ctx.drawImage(this._background_image, 0, 0, this._canvas.width, this._canvas.height);
+        else if (this._background_color)
+        {
+            this._ctx.fillStyle = this._background_color;
+            this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
+        }
     }
 
     // Метод для добавления в конец очереди отрисовки новой рендер-функции

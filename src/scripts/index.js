@@ -244,6 +244,7 @@ Promise.all([
     AsyncImageLoader(require('../images/bar.png')).then(img => progress.setBarImage(img)),
     AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/top_panel.png')).then(img => top_panel.setBackgroundImage(img)),
+    AsyncImageLoader(require('../images/background.png')).then(img => screen.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/progress_panel.png')).then(img => progress_panel.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/pause_base.png')).then(img => pause_button.setBaseImage(img)),
     AsyncImageLoader(require('../images/pause_hover.png')).then(img => pause_button.setHoverImage(img)),
