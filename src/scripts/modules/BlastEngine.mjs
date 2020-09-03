@@ -103,6 +103,19 @@ export class BlastEngine
         return this._group;
     }
 
+    // Метод для получения строки
+    getRow(cellX, cellY)
+    {
+        const group = [];
+
+        for (let x = 0; x < this._cellsX; x++)
+        {
+            group.push({x: x, y: cellY});
+        }
+        this._group = group;
+        return this._group;
+    }
+
     // Метод сброса типа ячейки
     clearCell(x, y)
     {

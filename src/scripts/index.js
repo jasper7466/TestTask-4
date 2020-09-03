@@ -235,7 +235,17 @@ function gameLoop(state, grid, game, sprites)
         if (state.isPressed)
         {
             state.address = grid.getInstanceAddress(state.target);          // Получаем адрес тайла в сетке
-            state.group = game.getGroup(state.address.x, state.address.y);  // Получаем группу адресов ячеек на удаление
+
+            // Получаем группу адресов ячеек на удаление
+            if (booster_button.getState())
+            {
+                state.group = game.getRow(state.address.x, state.address.y);
+                state.boosters--;
+                booster_button.reset();
+                booster_button.setText(`Бустер (x${gameState.boosters})`);
+            }
+            else
+                state.group = game.getGroup(state.address.x, state.address.y);
 
             if (state.group.length < minGroup)
             {

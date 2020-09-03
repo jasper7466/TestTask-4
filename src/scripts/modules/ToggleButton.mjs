@@ -27,6 +27,7 @@ export class ToggleButton extends Button
     reset()
     {
         this._isFixed = false;
+        this.setBackgroundImage(this._baseImg);
     }
 
     // Переопределённый метод-обработчик события "клик"
