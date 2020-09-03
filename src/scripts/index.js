@@ -31,7 +31,7 @@ const gridX = 50;               // Положение игрового поля 
 const gridY = 150;              // Положение игрового поля по Y
 const cellsX = 7;               // Размер сетки поля по оси X
 const cellsY = 7;               // Размер сетки поля по оси Y
-const variety = 5;              // Кол-во разновидностей тайлов
+const variety = 6;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
@@ -349,10 +349,9 @@ function gameLoop(state, grid, game, sprites)
                     game.fixChanges();                  // Уравниваем текущие координаты с новыми
                     const moves = game.getMoves();
                     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
-                    if (state.group.length >= superGroup && !state.isBoosted && !state.supercell)
+                    if (state.group.length >= superGroup && !state.isBoosted && !state.supercell && !state.isShuffling)
                     {
                         game.setSuperCell(state.address.x, state.address.y);
-                        console.log(state.address.x, state.address.y);
                         grid.getCell(state.address.x, state.address.y).instance.addParallelTask(blink(20));
                     }
 
@@ -361,12 +360,13 @@ function gameLoop(state, grid, game, sprites)
 
                     state.isBoosted = false;
                     booster_button.reset();
+                    state.isShuffling = false;
                     uiUnlock();                         // Разблокировка интерфейса
                 }
             }
         }
 
-        if (state.isShuffling)
+        if (state.isShuffling && !state.isMoving)
         {            
             uiLock();
             game.shuffle();
@@ -379,7 +379,6 @@ function gameLoop(state, grid, game, sprites)
                 tile.updateY = cell.y;       // для обновления
                 state.changes.push(tile);
             });
-            state.isShuffling = false;
             state.isMoving = true;
         }
     }
