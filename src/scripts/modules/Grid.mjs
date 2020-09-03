@@ -14,8 +14,8 @@ export class Grid extends BaseComponent
         this._collection = [];      // Хранилище элементов сетки
         this._stepX = 0;            // Шаг сетки по оси x
         this._stepY = 0;            // Шаг сетки по оси y
-        this._paddingV = 0.1;         // Внутренний отступ по вертикали
-        this._paddingH = 0.1;         // Внутренний отступ по горизонтали
+        this._paddingV = 0.1;       // Внутренний отступ по вертикали   FIXME:
+        this._paddingH = 0.1;       // Внутренний отступ по горизонтали FIXME:
 
         this._removeQueue = [];     // Очередь на удаление
 
