@@ -10,6 +10,7 @@ import { BlastEngine } from './modules/BlastEngine.mjs';
 import { BaseComponent } from './modules/BaseComponent.mjs';
 import { Label } from './modules/Label.mjs';
 import { Button } from './modules/Button.mjs';
+import { ToggleButton } from './modules/ToggleButton.mjs';
 import { ProgressBar } from './modules/ProgressBar.mjs';
 import { AsyncRandomRepaint } from './utilities/AsyncImageToner.mjs';
 import { AsyncImageLoader } from './utilities/AsyncImageLoader.mjs';
@@ -27,8 +28,8 @@ const gridWidth = 500;          // Ширина игрового поля
 const gridHeight = 500;         // Высота игрового поля
 const gridX = 50;               // Положение игрового поля по X
 const gridY = 150;              // Положение игрового поля по Y
-const cellsX = 7;              // Размер сетки поля по оси X
-const cellsY = 7;              // Размер сетки поля по оси Y
+const cellsX = 7;               // Размер сетки поля по оси X
+const cellsY = 7;               // Размер сетки поля по оси Y
 const variety = 6;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
@@ -49,7 +50,7 @@ const gameState = {
     moves: movesLimit,          // Оставшееся количество ходов
     score: 0,                   // Количество очков
     shuffles: 3,                // Оставшееся количество перемешиваний
-    busters: 1                  // Оставшееся количество бустеров
+    boosters: 1                 // Оставшееся количество бустеров
 }
 
 // Переменные
@@ -70,7 +71,7 @@ const score_label = new Label(ctx, 50, '#FFF', 'Roboto Slab', 0);
 const gameover_label = new Label(ctx, 90, '#FFF', 'Roboto Slab');
 const groups_label = new Label(ctx, 20, '#FFF', 'Roboto Slab');
 const shuffle_button = new Button(ctx, 20, '#FFF', 'Roboto Slab', `Перемешать (x${gameState.shuffles})`);
-const buster_button = new Button(ctx, 20, '#FFF', 'Roboto Slab', `Бустер (x${gameState.busters})`);
+const booster_button = new ToggleButton(ctx, 20, '#FFF', 'Roboto Slab', `Бустер (x${gameState.boosters})`);
 const progress = new ProgressBar(ctx);
 const score_panel = new BaseComponent(ctx);
 const top_panel = new BaseComponent(ctx);
@@ -108,10 +109,10 @@ function init()
     shuffle_button.setSize(200, 60);
     shuffle_button.setClickHandler(shuffleClickHandler(gameState));
 
-    buster_button.setPosition(780, 570);
-    buster_button.setAnchor(0.5, 0.5);
-    buster_button.scaleOnBackgroundWidth(200);
-    buster_button.setSize(200, 60);
+    booster_button.setPosition(780, 570);
+    booster_button.setAnchor(0.5, 0.5);
+    booster_button.scaleOnBackgroundWidth(200);
+    booster_button.setSize(200, 60);
 
     progress.setSize(300, 25);
     progress.setAnchor(0.5, 0.5);
@@ -128,16 +129,15 @@ function init()
     progress_panel.setPosition(screenWidth / 2, 0);
 
     progress_label.setPosition(screenWidth / 2, 15);
-
     
     // Заполняем сетку тайлами
     for (let x = 0; x < cellsX; x++)
     {
         for(let y = 0; y < cellsY; y++)
         {
-            const tile = TileFactory(sprites, game.getCell(x, y).type);       // Создаём тайл
-            tile.setClickHandler(tileClickHandler(gameState));          // Вешаем обработчик события "клик"
-            grid.addItem(tile, x, y);                                   // Помещаем в узел сетки
+            const tile = TileFactory(sprites, game.getCell(x, y).type);     // Создаём тайл
+            tile.setClickHandler(tileClickHandler(gameState));              // Вешаем обработчик события "клик"
+            grid.addItem(tile, x, y);                                       // Помещаем в узел сетки
         }
     }
 
@@ -150,14 +150,14 @@ function init()
     screen.addLayer(groups_label);
     screen.addLayer(gameover_label);
     screen.addLayer(shuffle_button);
-    screen.addLayer(buster_button);
+    screen.addLayer(booster_button);
     screen.addLayer(top_panel);
     screen.addLayer(progress_panel);
     screen.addLayer(progress_label);
     screen.addLayer(progress);
     
-    screen.addTask(gameLoop(gameState, grid, game, sprites));    // Добавляем циклический вызов функции игрового цикла
-    screen.renderEngineStart();                         // Запускаем движок
+    screen.addTask(gameLoop(gameState, grid, game, sprites));   // Добавляем циклический вызов функции игрового цикла
+    screen.renderEngineStart();                                 // Запускаем движок
 
     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
 }
@@ -185,12 +185,14 @@ const shuffleClickHandler = state => {
 const uiLock = () => {
     grid.stopEventPropagation();    // Блокируем распространение событий на поле
     shuffle_button.disableEvents(); // Блокируем события кнопки "Перемешать"
+    booster_button.disableEvents(); // Блокируем события кнопки "Бустер"
 }
 
 // Разблокировка пользовательского интерфейса
 const uiUnlock = () => {
     grid.allowEventPropagation();   // Разрешаем распространение событий на поле
     shuffle_button.enableEvents();  // Разрешаем события кнопки "Перемешать"
+    booster_button.enableEvents();  // Разрешаем события кнопки "Бустер"
 }
 
 // Асинхронно загружаем образец тайла и получаем набор спрайтов для тайлов
@@ -205,15 +207,15 @@ Promise.all([
     AsyncImageLoader(require('../images/progress_panel.png')).then(img => progress_panel.setBackgroundImage(img)),
     AsyncImageLoader(require('../images/button2_base.png')).then(img => {
         shuffle_button.setBaseImage(img);
-        buster_button.setBaseImage(img);
+        booster_button.setBaseImage(img);
     }),
     AsyncImageLoader(require('../images/button2_hover.png')).then(img => {
         shuffle_button.setHoverImage(img);
-        buster_button.setHoverImage(img);
+        booster_button.setHoverImage(img);
     }),
     AsyncImageLoader(require('../images/button2_press.png')).then(img => {
         shuffle_button.setPressImage(img);
-        buster_button.setPressImage(img);
+        booster_button.setPressImage(img);
     })
 ])
     .then(() => {

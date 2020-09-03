@@ -50,10 +50,4 @@ export class Button extends Label
     {
         this._pressImg = img;
     }
-
-    // Переопределённый метод отрисовки
-    render()
-    {
-        super.render();
-    }
 }
