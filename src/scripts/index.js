@@ -31,7 +31,7 @@ const gridX = 50;               // Положение игрового поля 
 const gridY = 150;              // Положение игрового поля по Y
 const cellsX = 7;               // Размер сетки поля по оси X
 const cellsY = 7;               // Размер сетки поля по оси Y
-const variety = 4;              // Кол-во разновидностей тайлов
+const variety = 5;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
@@ -356,7 +356,7 @@ function gameLoop(state, grid, game, sprites)
                         grid.getCell(state.address.x, state.address.y).instance.addParallelTask(blink(20));
                     }
 
-                    if (state.shuffles == 0 && moves == 0)
+                    if (!state.shuffles && !state.boosters && !moves)
                         gameover_label.setText('Вы проиграли');
 
                     state.isBoosted = false;
@@ -374,7 +374,7 @@ function gameLoop(state, grid, game, sprites)
             game._field.forEach(cell => {
                 const tile = grid.getCell(cell.dx, cell.dy);
                 let loc = grid.getCellLocation(cell.x, cell.y);
-                tile.instance.addParallelTask(move(loc.x, loc.y, 100, 300));
+                tile.instance.addSerialTask(move(loc.x, loc.y, 100, 300));
                 tile.updateX = cell.x;       // Задём координаты
                 tile.updateY = cell.y;       // для обновления
                 state.changes.push(tile);
