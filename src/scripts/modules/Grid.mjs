@@ -61,6 +61,12 @@ export class Grid extends BaseComponent
         });
     }
 
+    // Метод сортировки коллекции
+    sortCollection()
+    {
+        this._collection.sort((a, b) => b.cellY - a.cellY);     // FIXME: частный случай
+    }
+
     // Метод добавления элемента
     addItem(instance, cellX, cellY)
     {
@@ -68,7 +74,7 @@ export class Grid extends BaseComponent
 
         instance.setContext(this._ctx);
         instance.setPosition(loc.x, loc.y);
-        instance.scaleOnBackgroundWidth(this._stepX);   // FIXME:
+        instance.scaleOnBackgroundWidth(this._stepX);   // FIXME: частный случай
 
         const item = {
             instance: instance,     // Ссылка на сущность
@@ -79,7 +85,7 @@ export class Grid extends BaseComponent
         };
 
         this._collection.push(item);
-        this._collection.sort((a, b) => b.cellY - a.cellY);     // FIXME: частный случай
+        // this.sortCollection();
     }
 
     // Метод получения ячейки по её координатам
@@ -142,6 +148,7 @@ export class Grid extends BaseComponent
     // Метод отрисовки
     render()
     {
+        this.sortCollection();
         // Удаляем элементы, стоящие в очереди
         this._removeQueue.forEach(item => {
             item.onRemove();
