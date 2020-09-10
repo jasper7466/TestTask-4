@@ -3,6 +3,9 @@
 // Корневой файл стилей страницы
 import '../styles/index.css';
 
+// Конфигурация
+import { images } from './config';
+
 // Модули и утилиты общего назначения
 import { Screen } from './modules/Screen.mjs';
 import { Grid } from './modules/Grid.mjs';
@@ -12,8 +15,8 @@ import { Label } from './modules/Label.mjs';
 import { Button } from './modules/Button.mjs';
 import { ToggleButton } from './modules/ToggleButton.mjs';
 import { ProgressBar } from './modules/ProgressBar.mjs';
+import { ImageLoader } from './modules/ImageLoader.mjs';
 import { AsyncRandomRepaint } from './utilities/AsyncImageToner.mjs';
-import { AsyncImageLoader } from './utilities/AsyncImageLoader.mjs';
 import { TileFactory } from './utilities/TileFactory.mjs';
 
 // Анимационные функции
@@ -40,6 +43,8 @@ const minGroup = 3;             // Минимальный размер груп�
 const superGroup = 4;           // Минимальный размер группы для создания супер-тайла
 const boostR = 1;               // Радиус действия бустера
 
+let assets = {};                // Набор изображений
+
 // Объект для хранения состояния игры
 const gameState = {
     isPressed: false,           // Флаг нажатия на тайл
@@ -59,7 +64,6 @@ const gameState = {
 }
 
 // Переменные
-let tile_template = undefined;  // Будущий образец тайла
 let sprites = undefined;        // Будущий массив со спрайтами тайлов
 
 // Создаём экран отрисовки, получаем контекст
@@ -83,15 +87,18 @@ const score_panel = new BaseComponent(ctx);
 const top_panel = new BaseComponent(ctx);
 const progress_panel = new BaseComponent(ctx);
 const progress_label = new Label(ctx, 20, '#FFF', 'Roboto Slab', 'Прогресс');
+const imageLoader = new ImageLoader(images);
 
 // Функция инициализации и конфигурирования игры
 function init()
 {
     // Игровое поле
+    grid.setBackgroundImage(assets.field);
     grid.setSize(gridWidth, gridHeight);
     grid.setPosition(gridX, gridY);
 
     // Панель информации
+    score_panel.setBackgroundImage(assets.scorePanel);
     score_panel.setAnchor(0.5, 0.5);
     score_panel.scaleOnBackgroundWidth(300);
     score_panel.setPosition(780, 300);
@@ -100,6 +107,7 @@ function init()
     moves_caption.setPosition(780, 160);
 
     // Поле вывода количества ходов
+    moves_label.setBackgroundImage(assets.moves);
     moves_label.setAnchor(0.5, 0.7);
     moves_label.scaleOnBackgroundWidth(180);
     moves_label.setText(gameState.moves);
@@ -119,6 +127,9 @@ function init()
     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
 
     // Кнопка "Перемешать"
+    shuffle_button.setBaseImage(assets.buttonBase2);
+    shuffle_button.setHoverImage(assets.buttonHover2);
+    shuffle_button.setPressImage(assets.buttonPress2);
     shuffle_button.setPosition(780, 500);
     shuffle_button.setAnchor(0.5, 0.5);
     shuffle_button.scaleOnBackgroundWidth(200);
@@ -126,6 +137,9 @@ function init()
     shuffle_button.setClickHandler(shuffleClickHandler(gameState));
 
     // Кнопка "Бустер"
+    booster_button.setBaseImage(assets.buttonBase2);
+    booster_button.setHoverImage(assets.buttonHover2);
+    booster_button.setPressImage(assets.buttonPress2);
     booster_button.setPosition(780, 570);
     booster_button.setAnchor(0.5, 0.5);
     booster_button.scaleOnBackgroundWidth(200);
@@ -133,12 +147,17 @@ function init()
     booster_button.setClickHandler(boosterClickHandler(gameState));
 
     // Кнопка "Пауза"
+    pause_button.setBaseImage(assets.pauseBase);
+    pause_button.setHoverImage(assets.pauseHover);
+    pause_button.setPressImage(assets.pausePress);
     pause_button.setPosition(930, 50);
     pause_button.setAnchor(0.5, 0.5);
     pause_button.scaleOnBackgroundWidth(60);
     pause_button.setClickHandler(pauseClickHandler());
 
     // Полоса прогресса
+    progress.setBackgroundImage(assets.barBack);
+    progress.setBarImage(assets.bar);
     progress.setSize(300, 25);
     progress.setAnchor(0.5, 0.5);
     progress.setPosition(screenWidth / 2, 45);
@@ -146,11 +165,13 @@ function init()
     progress.setProgress(0);
 
     // Верхняя панель
+    top_panel.setBackgroundImage(assets.topPanel);
     top_panel.setSize(700, 100);
     top_panel.setAnchor(0.5, 0);
     top_panel.setPosition(screenWidth / 2, 0);
 
     // Панель прогресса
+    progress_panel.setBackgroundImage(assets.progressPanel);
     progress_panel.setSize(400, 70);
     progress_panel.setAnchor(0.5, 0);
     progress_panel.setPosition(screenWidth / 2, 0);
@@ -170,6 +191,7 @@ function init()
     }
 
     // Добавляем элементы в очередь движка отрисовки в нужном порядке
+    screen.setBackgroundImage(assets.background);
     screen.addLayer(grid);
     screen.addLayer(score_panel);
     screen.addLayer(moves_caption);
@@ -251,40 +273,17 @@ const uiUnlock = () => {
         booster_button.enableEvents();  // Разрешаем события кнопки "Бустер"
 }
 
-// Асинхронно загружаем необходимые изображения
-Promise.all([
-    AsyncImageLoader(require('../images/tile.png')).then(img => tile_template = img),
-    AsyncImageLoader(require('../images/field.png')).then(img => grid.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/moves.png')).then(img => moves_label.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/bar_back.png')).then(img => progress.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/bar.png')).then(img => progress.setBarImage(img)),
-    AsyncImageLoader(require('../images/score_panel.png')).then(img => score_panel.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/top_panel.png')).then(img => top_panel.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/background.png')).then(img => screen.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/progress_panel.png')).then(img => progress_panel.setBackgroundImage(img)),
-    AsyncImageLoader(require('../images/pause_base.png')).then(img => pause_button.setBaseImage(img)),
-    AsyncImageLoader(require('../images/pause_hover.png')).then(img => pause_button.setHoverImage(img)),
-    AsyncImageLoader(require('../images/pause_press.png')).then(img => pause_button.setPressImage(img)),
-    AsyncImageLoader(require('../images/button2_base.png')).then(img => {
-        shuffle_button.setBaseImage(img);
-        booster_button.setBaseImage(img);
-    }),
-    AsyncImageLoader(require('../images/button2_hover.png')).then(img => {
-        shuffle_button.setHoverImage(img);
-        booster_button.setHoverImage(img);
-    }),
-    AsyncImageLoader(require('../images/button2_press.png')).then(img => {
-        shuffle_button.setPressImage(img);
-        booster_button.setPressImage(img);
-    })
-])
+
+imageLoader.load()
     .then(() => {
-        AsyncRandomRepaint(tile_template, variety, depth)
-            .then(repainted => {
-                sprites = repainted;    // Массив перекрашенных спрайтов тайлов
-                init();                 // Вызов инициализации
-            })
+        assets = Object.assign(assets, imageLoader.images);
+        console.log(assets);
+        AsyncRandomRepaint(assets.tile, variety, depth)
+        .then(repainted => {
+            sprites = repainted;    // Массив перекрашенных спрайтов тайлов
+            init();                 // Вызов инициализации
         })
+    })
     .catch(err => console.log(err));
 
 // Функция игрового цикла
