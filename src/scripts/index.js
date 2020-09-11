@@ -16,6 +16,7 @@ import { Button } from './modules/Button.mjs';
 import { ToggleButton } from './modules/ToggleButton.mjs';
 import { ProgressBar } from './modules/ProgressBar.mjs';
 import { ImageLoader } from './modules/ImageLoader.mjs';
+import { SpriteSplitter } from './modules/SpriteSplitter.mjs';
 import { AsyncRandomRepaint } from './utilities/AsyncImageToner.mjs';
 import { TileFactory } from './utilities/TileFactory.mjs';
 
@@ -34,7 +35,7 @@ const gridX = 50;               // Положение игрового поля 
 const gridY = 150;              // Положение игрового поля по Y
 const cellsX = 7;               // Размер сетки поля по оси X
 const cellsY = 7;               // Размер сетки поля по оси Y
-const variety = 6;              // Кол-во разновидностей тайлов
+const variety = 5;              // Кол-во разновидностей тайлов
 const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
 
 const scoreToWin = 2000;        // Кол-во очков для выйгрыша
@@ -42,8 +43,6 @@ const movesLimit = 50;          // Лимит ходов
 const minGroup = 3;             // Минимальный размер группы на удаление
 const superGroup = 4;           // Минимальный размер группы для создания супер-тайла
 const boostR = 1;               // Радиус действия бустера
-
-let assets = {};                // Набор изображений
 
 // Объект для хранения состояния игры
 const gameState = {
@@ -87,18 +86,20 @@ const score_panel = new BaseComponent(ctx);
 const top_panel = new BaseComponent(ctx);
 const progress_panel = new BaseComponent(ctx);
 const progress_label = new Label(ctx, 20, '#FFF', 'Roboto Slab', 'Прогресс');
-const imageLoader = new ImageLoader(images);
+
+const assets = new ImageLoader(images);
+const tiles = new SpriteSplitter();
 
 // Функция инициализации и конфигурирования игры
 function init()
 {
     // Игровое поле
-    grid.setBackgroundImage(assets.field);
+    grid.setBackgroundImage(assets.images.field);
     grid.setSize(gridWidth, gridHeight);
     grid.setPosition(gridX, gridY);
 
     // Панель информации
-    score_panel.setBackgroundImage(assets.scorePanel);
+    score_panel.setBackgroundImage(assets.images.scorePanel);
     score_panel.setAnchor(0.5, 0.5);
     score_panel.scaleOnBackgroundWidth(300);
     score_panel.setPosition(780, 300);
@@ -107,7 +108,7 @@ function init()
     moves_caption.setPosition(780, 160);
 
     // Поле вывода количества ходов
-    moves_label.setBackgroundImage(assets.moves);
+    moves_label.setBackgroundImage(assets.images.moves);
     moves_label.setAnchor(0.5, 0.7);
     moves_label.scaleOnBackgroundWidth(180);
     moves_label.setText(gameState.moves);
@@ -127,9 +128,9 @@ function init()
     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
 
     // Кнопка "Перемешать"
-    shuffle_button.setBaseImage(assets.buttonBase2);
-    shuffle_button.setHoverImage(assets.buttonHover2);
-    shuffle_button.setPressImage(assets.buttonPress2);
+    shuffle_button.setBaseImage(assets.images.buttonBase2);
+    shuffle_button.setHoverImage(assets.images.buttonHover2);
+    shuffle_button.setPressImage(assets.images.buttonPress2);
     shuffle_button.setPosition(780, 500);
     shuffle_button.setAnchor(0.5, 0.5);
     shuffle_button.scaleOnBackgroundWidth(200);
@@ -137,9 +138,9 @@ function init()
     shuffle_button.setClickHandler(shuffleClickHandler(gameState));
 
     // Кнопка "Бустер"
-    booster_button.setBaseImage(assets.buttonBase2);
-    booster_button.setHoverImage(assets.buttonHover2);
-    booster_button.setPressImage(assets.buttonPress2);
+    booster_button.setBaseImage(assets.images.buttonBase2);
+    booster_button.setHoverImage(assets.images.buttonHover2);
+    booster_button.setPressImage(assets.images.buttonPress2);
     booster_button.setPosition(780, 570);
     booster_button.setAnchor(0.5, 0.5);
     booster_button.scaleOnBackgroundWidth(200);
@@ -147,17 +148,17 @@ function init()
     booster_button.setClickHandler(boosterClickHandler(gameState));
 
     // Кнопка "Пауза"
-    pause_button.setBaseImage(assets.pauseBase);
-    pause_button.setHoverImage(assets.pauseHover);
-    pause_button.setPressImage(assets.pausePress);
+    pause_button.setBaseImage(assets.images.pauseBase);
+    pause_button.setHoverImage(assets.images.pauseHover);
+    pause_button.setPressImage(assets.images.pausePress);
     pause_button.setPosition(930, 50);
     pause_button.setAnchor(0.5, 0.5);
     pause_button.scaleOnBackgroundWidth(60);
     pause_button.setClickHandler(pauseClickHandler());
 
     // Полоса прогресса
-    progress.setBackgroundImage(assets.barBack);
-    progress.setBarImage(assets.bar);
+    progress.setBackgroundImage(assets.images.barBack);
+    progress.setBarImage(assets.images.bar);
     progress.setSize(300, 25);
     progress.setAnchor(0.5, 0.5);
     progress.setPosition(screenWidth / 2, 45);
@@ -165,13 +166,13 @@ function init()
     progress.setProgress(0);
 
     // Верхняя панель
-    top_panel.setBackgroundImage(assets.topPanel);
+    top_panel.setBackgroundImage(assets.images.topPanel);
     top_panel.setSize(700, 100);
     top_panel.setAnchor(0.5, 0);
     top_panel.setPosition(screenWidth / 2, 0);
 
     // Панель прогресса
-    progress_panel.setBackgroundImage(assets.progressPanel);
+    progress_panel.setBackgroundImage(assets.images.progressPanel);
     progress_panel.setSize(400, 70);
     progress_panel.setAnchor(0.5, 0);
     progress_panel.setPosition(screenWidth / 2, 0);
@@ -191,7 +192,7 @@ function init()
     }
 
     // Добавляем элементы в очередь движка отрисовки в нужном порядке
-    screen.setBackgroundImage(assets.background);
+    screen.setBackgroundImage(assets.images.background);
     screen.addLayer(grid);
     screen.addLayer(score_panel);
     screen.addLayer(moves_caption);
@@ -274,15 +275,14 @@ const uiUnlock = () => {
 }
 
 
-imageLoader.load()
+assets.load()
     .then(() => {
-        assets = Object.assign(assets, imageLoader.images);
-        console.log(assets);
-        AsyncRandomRepaint(assets.tile, variety, depth)
-        .then(repainted => {
-            sprites = repainted;    // Массив перекрашенных спрайтов тайлов
-            init();                 // Вызов инициализации
-        })
+        tiles.init(assets.images.tileBlock, 5);
+        tiles.split()
+            .then(() => {
+                sprites = tiles.images;     // Массив перекрашенных спрайтов тайлов
+                init();                     // Вызов инициализации
+            });
     })
     .catch(err => console.log(err));
 

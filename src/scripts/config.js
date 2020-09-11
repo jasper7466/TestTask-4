@@ -3,6 +3,7 @@
 // Набор изображений
 export const images = {
     tile: require('../images/tile.png'),                    // Обесцвеченный спрайт тайла
+    tileBlock: require('../images/blocks.png'),             // Обесцвеченный спрайт тайла
     field: require('../images/field.png'),                  // Фон игрового поля
     moves: require('../images/moves.png'),                  // Фон метки "Ходы"
     bar: require('../images/bar.png'),                      // Спрайт полосы прогресса
