@@ -5,6 +5,7 @@ import '../styles/index.css';
 
 // Конфигурация
 import { images } from './config';
+import { config } from './config';
 
 // Модули и утилиты общего назначения
 import { Screen } from './modules/Screen.mjs';
@@ -17,7 +18,6 @@ import { ToggleButton } from './modules/ToggleButton.mjs';
 import { ProgressBar } from './modules/ProgressBar.mjs';
 import { ImageLoader } from './modules/ImageLoader.mjs';
 import { SpriteSplitter } from './modules/SpriteSplitter.mjs';
-import { AsyncRandomRepaint } from './utilities/AsyncImageToner.mjs';
 import { TileFactory } from './utilities/TileFactory.mjs';
 
 // Анимационные функции
@@ -27,22 +27,6 @@ import { blink } from './utilities/Animations.mjs';
 
 // Константы
 const holder = document.querySelector('.main'); // Родительский узел для размещения экрана отрисовки
-const screenWidth = 1000;       // Ширина экрана
-const screenHeight = 700;       // Высота экрана
-const gridWidth = 500;          // Ширина игрового поля
-const gridHeight = 500;         // Высота игрового поля
-const gridX = 50;               // Положение игрового поля по X
-const gridY = 150;              // Положение игрового поля по Y
-const cellsX = 7;               // Размер сетки поля по оси X
-const cellsY = 7;               // Размер сетки поля по оси Y
-const variety = 5;              // Кол-во разновидностей тайлов
-const depth = 200;              // Ограничение на значение декремента RGB компонент при окраске спрайта
-
-const scoreToWin = 2000;        // Кол-во очков для выйгрыша
-const movesLimit = 50;          // Лимит ходов
-const minGroup = 3;             // Минимальный размер группы на удаление
-const superGroup = 4;           // Минимальный размер группы для создания супер-тайла
-const boostR = 1;               // Радиус действия бустера
 
 // Объект для хранения состояния игры
 const gameState = {
@@ -56,22 +40,22 @@ const gameState = {
     address: undefined,         // Адрес ячейки, содержащей сущность
     group: [],                  // Выбранная группа ячеек (адреса/ссылки сущностей)
     changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
-    moves: movesLimit,          // Оставшееся количество ходов
+    moves: config.movesLimit,   // Оставшееся количество ходов
     score: 0,                   // Количество очков
-    shuffles: 3,                // Оставшееся количество перемешиваний
-    boosters: 2                 // Оставшееся количество бустеров
+    shuffles: config.shuffles,  // Оставшееся количество перемешиваний
+    boosters: config.boosters   // Оставшееся количество бустеров
 }
 
 // Переменные
 let sprites = undefined;        // Будущий массив со спрайтами тайлов
 
 // Создаём экран отрисовки, получаем контекст
-const screen = new Screen(holder, screenWidth, screenHeight, '#036');
+const screen = new Screen(holder, config.screenWidth, config.screenHeight, '#036');
 const ctx = screen.getContext();
 
 // Создаём остальные логические/графические сущности
-const grid = new Grid(ctx, cellsX, cellsY);
-const game = new BlastEngine(cellsX, cellsY, variety, minGroup, superGroup);
+const grid = new Grid(ctx, config.cellsX, config.cellsY);
+const game = new BlastEngine(config.cellsX, config.cellsY, config.variety, config.minGroup, config.superGroup);
 const moves_caption = new Label(ctx, 30, '#FFF', 'Roboto Slab', 'Ходы:');
 const moves_label = new Label(ctx, 90, '#FFF', 'Roboto Slab');
 const score_caption = new Label(ctx, 30, '#FFF', 'Roboto Slab', 'Очки:');
@@ -95,8 +79,8 @@ function init()
 {
     // Игровое поле
     grid.setBackgroundImage(assets.images.field);
-    grid.setSize(gridWidth, gridHeight);
-    grid.setPosition(gridX, gridY);
+    grid.setSize(config.gridWidth, config.gridHeight);
+    grid.setPosition(config.gridX, config.gridY);
 
     // Панель информации
     score_panel.setBackgroundImage(assets.images.scorePanel);
@@ -121,7 +105,7 @@ function init()
     score_label.setPosition(780, 410);
     
     // Поле вывода сообщений
-    banner_label.setPosition(screenWidth / 2, screenHeight / 2);
+    banner_label.setPosition(config.screenWidth / 2, config.screenHeight / 2);
 
     // Поле вывода количества доступных ходов
     groups_label.setPosition(150, 130);
@@ -161,7 +145,7 @@ function init()
     progress.setBarImage(assets.images.bar);
     progress.setSize(300, 25);
     progress.setAnchor(0.5, 0.5);
-    progress.setPosition(screenWidth / 2, 45);
+    progress.setPosition(config.screenWidth / 2, 45);
     progress.setBorder(3);
     progress.setProgress(0);
 
@@ -169,21 +153,21 @@ function init()
     top_panel.setBackgroundImage(assets.images.topPanel);
     top_panel.setSize(700, 100);
     top_panel.setAnchor(0.5, 0);
-    top_panel.setPosition(screenWidth / 2, 0);
+    top_panel.setPosition(config.screenWidth / 2, 0);
 
     // Панель прогресса
     progress_panel.setBackgroundImage(assets.images.progressPanel);
     progress_panel.setSize(400, 70);
     progress_panel.setAnchor(0.5, 0);
-    progress_panel.setPosition(screenWidth / 2, 0);
+    progress_panel.setPosition(config.screenWidth / 2, 0);
 
     // Заголовок "Прогресс"
-    progress_label.setPosition(screenWidth / 2, 15);
+    progress_label.setPosition(config.screenWidth / 2, 15);
     
     // Заполняем сетку тайлами
-    for (let x = 0; x < cellsX; x++)
+    for (let x = 0; x < config.cellsX; x++)
     {
-        for(let y = 0; y < cellsY; y++)
+        for(let y = 0; y < config.cellsY; y++)
         {
             const tile = TileFactory(sprites, game.getCell(x, y).type);     // Создаём тайл
             tile.setClickHandler(tileClickHandler(gameState));              // Вешаем обработчик события "клик"
@@ -298,7 +282,7 @@ function gameLoop(state, grid, game, sprites)
             // Получаем группу адресов ячеек на удаление
             if (state.isBoosted)                                // Если включен режим "Бустер"
             {
-                state.group = game.getRadius(state.address.x, state.address.y, boostR);
+                state.group = game.getRadius(state.address.x, state.address.y, config.boostR);
                 state.boosters--;
                 booster_button.setText(`Бустер (x${gameState.boosters})`);
             }
@@ -308,7 +292,7 @@ function gameLoop(state, grid, game, sprites)
                 state.group = game.getGroup(state.address.x, state.address.y);
             }
 
-            if (state.group.length < minGroup)                  // Ограничение на минимальную группу тайлов
+            if (state.group.length < config.minGroup)                  // Ограничение на минимальную группу тайлов
             {
                 state.isPressed = false;
                 return;
@@ -380,10 +364,10 @@ function gameLoop(state, grid, game, sprites)
                 });
                 moves_label.setText(gameState.moves);           // Выводим количество оставшихся шагов,
                 score_label.setText(state.score);               // очков
-                progress.setProgress(state.score / scoreToWin); // и обновляем прогресс
+                progress.setProgress(state.score / config.scoreToWin); // и обновляем прогресс
                 
                 // Обработка ситуации проигрыша/выигрыша по очкам и ходам
-                if (state.score >= scoreToWin)
+                if (state.score >= config.scoreToWin)
                     banner_label.setText('Вы победили');
                 else if (state.moves == 0)
                     banner_label.setText('Вы проиграли');
@@ -394,7 +378,7 @@ function gameLoop(state, grid, game, sprites)
                     groups_label.setText(`Доступно ходов: ${game.getMoves()}`);
 
                     // Обработка ситуации появления "супер-тайла"
-                    if (state.group.length >= superGroup && !state.isBoosted && !state.supercell && !state.isShuffling)
+                    if (state.group.length >= config.superGroup && !state.isBoosted && !state.supercell && !state.isShuffling)
                     {
                         game.setSuperCell(state.address.x, state.address.y);
                         grid.getCell(state.address.x, state.address.y).instance.addParallelTask(blink(20));
