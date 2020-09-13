@@ -4,9 +4,9 @@ import { Button } from './Button.mjs';
 // Класс кнопки
 export class ToggleButton extends Button
 {
-    constructor(ctx, fontsize = 14, textcolor = '#00', font = 'serif', text = '')
+    constructor(fontsize = 14, textcolor = '#00', font = 'serif', text = '')
     {
-        super(ctx, fontsize, textcolor, font, text);
+        super(fontsize, textcolor, font, text);
 
         this._isFixed = false;              // Состояние фиксации
     }
@@ -38,10 +38,10 @@ export class ToggleButton extends Button
     }
 
     // Переопределённый метод отрисовки
-    render()
+    render(ctx)
     {
         if (this._isFixed)
             this.setBackgroundImage(this._pressImg);
-        super.render();
+        super.render(ctx);
     }
 }

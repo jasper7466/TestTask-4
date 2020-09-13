@@ -1,9 +1,8 @@
 // Базовый класс для создания сцен
 export class Scene
 {
-    constructor(context)
+    constructor()
     {
-        this.ctx = context;            // Контекст
         this.collection = {};           // Коллекция элементов сцены
     }
 
@@ -41,11 +40,11 @@ export class Scene
     }
 
     // Метод рендеринга сцены
-    render()
+    render(ctx)
     {
         for (let item in this.collection)
         {
-            this.collection[item].render();
+            this.collection[item].render(ctx);
         }
     }
 }

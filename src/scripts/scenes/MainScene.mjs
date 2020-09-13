@@ -14,24 +14,24 @@ export class MainScene extends Scene
 {
     constructor(game)
     {
-        super(game.ctx);
+        super();
         this.game = game;
 
-        this.addComponent('grid', new Grid(this.ctx, config.cellsX, config.cellsY));
-        this.addComponent('scorePanel', new BaseComponent(this.ctx));
-        this.addComponent('topPanel', new BaseComponent(this.ctx));
-        this.addComponent('progressPanel', new BaseComponent(this.ctx));
-        this.addComponent('movesCaption', new Label(this.ctx, 30, '#FFF', 'Roboto Slab', 'Ходы:'));
-        this.addComponent('movesLabel', new Label(this.ctx, 90, '#FFF', 'Roboto Slab'));
-        this.addComponent('scoreCaption', new Label(this.ctx, 30, '#FFF', 'Roboto Slab', 'Очки:'));
-        this.addComponent('scoreLabel', new Label(this.ctx, 50, '#FFF', 'Roboto Slab', 0));
-        this.addComponent('bannerLabel', new Label(this.ctx, 90, '#CFF', 'Roboto Slab'));
-        this.addComponent('groupsLabel', new Label(this.ctx, 20, '#FFF', 'Roboto Slab'));
-        this.addComponent('shuffleButton', new Button(this.ctx, 20, '#FFF', 'Roboto Slab', `Перемешать (x${config.shuffles})`));
-        this.addComponent('boosterButton', new ToggleButton(this.ctx, 20, '#FFF', 'Roboto Slab', `Бустер (x${config.boosters})`));
-        this.addComponent('pauseButton', new ToggleButton(this.ctx));
-        this.addComponent('progress', new ProgressBar(this.ctx));
-        this.addComponent('progressLabel', new Label(this.ctx, 20, '#FFF', 'Roboto Slab', 'Прогресс'));
+        this.addComponent('grid', new Grid(config.cellsX, config.cellsY));
+        this.addComponent('scorePanel', new BaseComponent());
+        this.addComponent('topPanel', new BaseComponent());
+        this.addComponent('progressPanel', new BaseComponent());
+        this.addComponent('movesCaption', new Label(30, '#FFF', 'Roboto Slab', 'Ходы:'));
+        this.addComponent('movesLabel', new Label(90, '#FFF', 'Roboto Slab'));
+        this.addComponent('scoreCaption', new Label(30, '#FFF', 'Roboto Slab', 'Очки:'));
+        this.addComponent('scoreLabel', new Label(50, '#FFF', 'Roboto Slab', 0));
+        this.addComponent('bannerLabel', new Label(90, '#CFF', 'Roboto Slab'));
+        this.addComponent('groupsLabel', new Label(20, '#FFF', 'Roboto Slab'));
+        this.addComponent('shuffleButton', new Button(20, '#FFF', 'Roboto Slab', `Перемешать (x${config.shuffles})`));
+        this.addComponent('boosterButton', new ToggleButton(20, '#FFF', 'Roboto Slab', `Бустер (x${config.boosters})`));
+        this.addComponent('pauseButton', new ToggleButton());
+        this.addComponent('progress', new ProgressBar());
+        this.addComponent('progressLabel', new Label(20, '#FFF', 'Roboto Slab', 'Прогресс'));
     }
 
     init()

@@ -1,9 +1,8 @@
 // Класс базового компонента
 export class BaseComponent
 {
-    constructor(ctx)
+    constructor()
     {
-        this._ctx = ctx;                    // Контекст
         this._x = 0;                        // Положение по оси X
         this._y = 0;                        // Положение по оси Y
         this._dx = 0;                       // Положение точки отрисовки по X c учётом точки привязки
@@ -43,12 +42,6 @@ export class BaseComponent
 
         this._serialTaskQueue = [];         // Очередь последовательных задач
         this._parallelTaskQueue = [];       // Очередь параллельных задач
-    }
-
-    // Метод установки контекста
-    setContext(ctx)
-    {
-        this._ctx = ctx;
     }
 
     // Метод установки положения по обеим осям
@@ -347,10 +340,10 @@ export class BaseComponent
     }
 
     // Метод отрисовки
-    render()
+    render(ctx)
     {
         // Применяем прозрачность компонента к контексту
-        this._ctx.globalAlpha = this._alpha;
+        ctx.globalAlpha = this._alpha;
 
         // Выполняем проход по стеку параллельных задач
         this._parallelTaskQueue.forEach(func => {
@@ -366,9 +359,9 @@ export class BaseComponent
         }
         
         if (this._background != undefined)      // Если фоновое изображение задано
-            this._ctx.drawImage(this._background, this._dx, this._dy, this._width, this._height);
+            ctx.drawImage(this._background, this._dx, this._dy, this._width, this._height);
 
         // Восстанавливаем значение прозрачности для контекста
-        this._ctx.globalAlpha = this.alpha;
+        ctx.globalAlpha = this.alpha;
     }
 }

@@ -4,9 +4,9 @@ import { BaseComponent } from './BaseComponent.mjs';
 // Класс контейнера-сетки
 export class Grid extends BaseComponent
 {
-    constructor(ctx, cellsX, cellsY, ratio = 1)
+    constructor(cellsX, cellsY, ratio = 1)
     {
-        super(ctx);
+        super();
         this._cellsX = cellsX;      // Размер сетки по оси x (количество столбцов)
         this._cellsY = cellsY;      // Размер сетки по оси y (количество строк)
         this._ratio = ratio;        // Отношение сторон ячейки сетки
@@ -72,7 +72,6 @@ export class Grid extends BaseComponent
     {
         const loc = this.getCellLocation(cellX, cellY);
 
-        instance.setContext(this._ctx);
         instance.setPosition(loc.x, loc.y);
         instance.scaleOnBackgroundWidth(this._stepX);   // FIXME: частный случай
 
@@ -146,7 +145,7 @@ export class Grid extends BaseComponent
     }
 
     // Метод отрисовки
-    render()
+    render(ctx)
     {
         this.sortCollection();
         // Удаляем элементы, стоящие в очереди
@@ -157,10 +156,10 @@ export class Grid extends BaseComponent
 
         this._removeQueue = [];     // Очищаем очередь на удаление
         
-        super.render();
+        super.render(ctx);
 
         // Инициируем отрисовку сущностей из ячеек
-        this._collection.forEach(item => item.instance.render());
+        this._collection.forEach(item => item.instance.render(ctx));
         // FIXME: DEBUG
         // this._ctx.font = "18px serif";
         // this._ctx.fillStyle = "#FF00FF"

@@ -21,13 +21,10 @@ export class Game
 {
     constructor(holder)
     {
-        // Создаём экран отрисовки, получаем контекст
+        // Создаём необходимые сущности
         this.screen = new Screen(holder, config.screenWidth, config.screenHeight);
-        this.ctx = this.screen.getContext();
-        
         this.game = new BlastEngine(config.cellsX, config.cellsY, config.variety, config.minGroup, config.superGroup);
         this.gameScene = new MainScene(this);
-
         this.assets = new ImageLoader(images);
         this.tiles = new SpriteSplitter();
 
@@ -102,13 +99,13 @@ export class Game
         return target => {
             if (target.getState())
             {
-                banner_label.setText('Пауза');
-                uiLock();
+                this.gameScene.collection.bannerLabel.setText('Пауза');
+                this.uiLock();
             }
             else
             {
-                banner_label.setText('');
-                uiUnlock();
+                this.gameScene.collection.bannerLabel.setText('');
+                this.uiUnlock();
             }
         }
     }

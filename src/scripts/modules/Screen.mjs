@@ -99,11 +99,11 @@ export class Screen
     // Метод для отрисовки кадра анимационного цикла
     _renderStep()
     {
-        if (this._stopEngine)                                   // Выходим, если движок остановлен
+        if (this._stopEngine)                                               // Выходим, если движок остановлен
             return;
-        this.clear();                                           // Чистим холст
-        this._renderQueue.forEach(control => control.render()); // Отрисовываем элементы
-        this._taskQueue.forEach(task => task());                // Выполняем задания из очереди
+        this.clear();                                                       // Чистим холст
+        this._renderQueue.forEach(control => control.render(this._ctx));    // Отрисовываем элементы
+        this._taskQueue.forEach(task => task());                            // Выполняем задания из очереди
         requestAnimationFrame(() => this._renderStep());
     }
 
