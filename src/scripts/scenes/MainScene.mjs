@@ -17,6 +17,7 @@ export class MainScene extends Scene
         super();
         this.game = game;
 
+        this.addComponent('layout', new BaseComponent());
         this.addComponent('grid', new Grid(config.cellsX, config.cellsY));
         this.addComponent('scorePanel', new BaseComponent());
         this.addComponent('topPanel', new BaseComponent());
@@ -35,7 +36,11 @@ export class MainScene extends Scene
     }
 
     init()
-    {   
+    {
+        // Фон
+        this.collection.layout.setBackgroundImage(this.game.assets.images.background);
+        this.collection.layout.setSize(config.screenWidth, config.screenHeight);
+
         // Игровое поле
         this.collection.grid.setBackgroundImage(this.game.assets.images.field);
         this.collection.grid.setSize(config.gridWidth, config.gridHeight);

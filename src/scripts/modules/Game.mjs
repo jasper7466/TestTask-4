@@ -11,6 +11,7 @@ import { TileFactory } from '../utilities/TileFactory';
 
 // Сцены
 import { MainScene } from '../scenes/MainScene';
+import { PreloaderScene } from '../scenes/PreloaderScene.mjs';
 
 // Анимации
 import { fade } from '../utilities/Animations';
@@ -24,9 +25,11 @@ export class Game
         // Создаём необходимые сущности
         this.screen = new Screen(holder, config.screenWidth, config.screenHeight);
         this.game = new BlastEngine(config.cellsX, config.cellsY, config.variety, config.minGroup, config.superGroup);
-        this.gameScene = new MainScene(this);
         this.assets = new ImageLoader(images);
         this.tiles = new SpriteSplitter();
+
+        this.gameScene = new MainScene(this);
+        this.preloaderScene = new PreloaderScene(this);
 
         this.sprites = [];
 
@@ -48,13 +51,19 @@ export class Game
             boosters: config.boosters   // Оставшееся количество бустеров
         }
 
+        // Включаем сцену прелоадера.
+        // Она текстовая и не требует ассетов, поэтому может быть включена сразу
+        this.screen.setScene(this.preloaderScene);
+        this.screen.renderEngineStart();                // Стартуем движок
+
+        // Начинаем загрузку ассетов
         this.assets.load()
         .then(() => {
             this.tiles.init(this.assets.images.tileBlock, 5);
             this.tiles.split()
                 .then(() => {
-                    this.sprites = this.tiles.images;     // Массив перекрашенных спрайтов тайлов
-                    this.init();                // Вызов инициализации
+                    this.sprites = this.tiles.images;                       // Массив перекрашенных спрайтов тайлов
+                    setTimeout(() => this.init(), config.preloaderDelay);   // Вызов инициализации с задержкой
                 });
         })
         .catch(err => console.log(err));
@@ -74,14 +83,13 @@ export class Game
             }
         }
 
-        this.screen.setBackgroundImage(this.assets.images.background);
+        // this.screen.setBackgroundImage(this.assets.images.background);
 
         // Добавляем сцены в движок
-        this.screen.addLayer(this.gameScene);
+        this.screen.setScene(this.gameScene);
 
         // Добавляем циклический вызов функции игрового цикла и запускаем движок
         this.screen.addTask(() => this.loop());
-        this.screen.renderEngineStart();
     }
 
     // Обработчик события клика по тайлу
