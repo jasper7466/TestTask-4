@@ -1,0 +1,126 @@
+import { Scene } from '../modules/Scene';
+
+import { Grid } from '../modules/Grid.mjs';
+import { BaseComponent } from '../modules/BaseComponent.mjs';
+import { Label } from '../modules/Label.mjs';
+import { Button } from '../modules/Button.mjs';
+import { ToggleButton } from '../modules/ToggleButton.mjs';
+import { ProgressBar } from '../modules/ProgressBar.mjs';
+
+import { config } from '../config';
+
+// Класс сцены игры
+export class MainScene extends Scene
+{
+    constructor(game)
+    {
+        super(game.ctx);
+        this.game = game;
+
+        this.addComponent('grid', new Grid(this.ctx, config.cellsX, config.cellsY));
+        this.addComponent('scorePanel', new BaseComponent(this.ctx));
+        this.addComponent('topPanel', new BaseComponent(this.ctx));
+        this.addComponent('progressPanel', new BaseComponent(this.ctx));
+        this.addComponent('movesCaption', new Label(this.ctx, 30, '#FFF', 'Roboto Slab', 'Ходы:'));
+        this.addComponent('movesLabel', new Label(this.ctx, 90, '#FFF', 'Roboto Slab'));
+        this.addComponent('scoreCaption', new Label(this.ctx, 30, '#FFF', 'Roboto Slab', 'Очки:'));
+        this.addComponent('scoreLabel', new Label(this.ctx, 50, '#FFF', 'Roboto Slab', 0));
+        this.addComponent('bannerLabel', new Label(this.ctx, 90, '#CFF', 'Roboto Slab'));
+        this.addComponent('groupsLabel', new Label(this.ctx, 20, '#FFF', 'Roboto Slab'));
+        this.addComponent('shuffleButton', new Button(this.ctx, 20, '#FFF', 'Roboto Slab', `Перемешать (x${config.shuffles})`));
+        this.addComponent('boosterButton', new ToggleButton(this.ctx, 20, '#FFF', 'Roboto Slab', `Бустер (x${config.boosters})`));
+        this.addComponent('pauseButton', new ToggleButton(this.ctx));
+        this.addComponent('progress', new ProgressBar(this.ctx));
+        this.addComponent('progressLabel', new Label(this.ctx, 20, '#FFF', 'Roboto Slab', 'Прогресс'));
+    }
+
+    init()
+    {   
+        // Игровое поле
+        this.collection.grid.setBackgroundImage(this.game.assets.images.field);
+        this.collection.grid.setSize(config.gridWidth, config.gridHeight);
+        this.collection.grid.setPosition(config.gridX, config.gridY);
+
+        // Панель информации
+        this.collection.scorePanel.setBackgroundImage(this.game.assets.images.scorePanel);
+        this.collection.scorePanel.setAnchor(0.5, 0.5);
+        this.collection.scorePanel.scaleOnBackgroundWidth(300);
+        this.collection.scorePanel.setPosition(780, 300);
+
+        // Заголовок "Ходы"
+        this.collection.movesCaption.setPosition(780, 160);
+
+        // Поле вывода количества ходов
+        this.collection.movesLabel.setBackgroundImage(this.game.assets.images.moves);
+        this.collection.movesLabel.setAnchor(0.5, 0.7);
+        this.collection.movesLabel.scaleOnBackgroundWidth(180);
+        this.collection.movesLabel.setText(config.movesLimit);
+        this.collection.movesLabel.setPosition(780, 300);
+
+        // Заголовок "Очки"
+        this.collection.scoreCaption.setPosition(780, 370);
+
+        // Поле вывода количества очков
+        this.collection.scoreLabel.setPosition(780, 410);
+        
+        // Поле вывода сообщений
+        this.collection.bannerLabel.setPosition(config.screenWidth / 2, config.screenHeight / 2);
+
+        // Поле вывода количества доступных ходов
+        this.collection.groupsLabel.setPosition(150, 130);
+        // this.collection.groupsLabel.setText('Доступно ходов: 0'); FIXME:
+
+        // Кнопка "Перемешать"
+        this.collection.shuffleButton.setBaseImage(this.game.assets.images.buttonBase2);
+        this.collection.shuffleButton.setHoverImage(this.game.assets.images.buttonHover2);
+        this.collection.shuffleButton.setPressImage(this.game.assets.images.buttonPress2);
+        this.collection.shuffleButton.setPosition(780, 500);
+        this.collection.shuffleButton.setAnchor(0.5, 0.5);
+        this.collection.shuffleButton.scaleOnBackgroundWidth(200);
+        this.collection.shuffleButton.setSize(200, 60);
+        this.collection.shuffleButton.setClickHandler(this.game.shuffleClickHandler());
+
+        // Кнопка "Бустер"
+        this.collection.boosterButton.setBaseImage(this.game.assets.images.buttonBase2);
+        this.collection.boosterButton.setHoverImage(this.game.assets.images.buttonHover2);
+        this.collection.boosterButton.setPressImage(this.game.assets.images.buttonPress2);
+        this.collection.boosterButton.setPosition(780, 570);
+        this.collection.boosterButton.setAnchor(0.5, 0.5);
+        this.collection.boosterButton.scaleOnBackgroundWidth(200);
+        this.collection.boosterButton.setSize(200, 60);
+        this.collection.boosterButton.setClickHandler(this.game.boosterClickHandler());
+
+        // Кнопка "Пауза"
+        this.collection.pauseButton.setBaseImage(this.game.assets.images.pauseBase);
+        this.collection.pauseButton.setHoverImage(this.game.assets.images.pauseHover);
+        this.collection.pauseButton.setPressImage(this.game.assets.images.pausePress);
+        this.collection.pauseButton.setPosition(930, 50);
+        this.collection.pauseButton.setAnchor(0.5, 0.5);
+        this.collection.pauseButton.scaleOnBackgroundWidth(60);
+        this.collection.pauseButton.setClickHandler(this.game.pauseClickHandler());
+
+        // Полоса прогресса
+        this.collection.progress.setBackgroundImage(this.game.assets.images.barBack);
+        this.collection.progress.setBarImage(this.game.assets.images.bar);
+        this.collection.progress.setSize(300, 25);
+        this.collection.progress.setAnchor(0.5, 0.5);
+        this.collection.progress.setPosition(config.screenWidth / 2, 45);
+        this.collection.progress.setBorder(3);
+        this.collection.progress.setProgress(0);
+
+        // Верхняя панель
+        this.collection.topPanel.setBackgroundImage(this.game.assets.images.topPanel);
+        this.collection.topPanel.setSize(700, 100);
+        this.collection.topPanel.setAnchor(0.5, 0);
+        this.collection.topPanel.setPosition(config.screenWidth / 2, 0);
+
+        // Панель прогресса
+        this.collection.progressPanel.setBackgroundImage(this.game.assets.images.progressPanel);
+        this.collection.progressPanel.setSize(400, 70);
+        this.collection.progressPanel.setAnchor(0.5, 0);
+        this.collection.progressPanel.setPosition(config.screenWidth / 2, 0);
+
+        // Заголовок "Прогресс"
+        this.collection.progressLabel.setPosition(config.screenWidth / 2, 15);
+    }
+}

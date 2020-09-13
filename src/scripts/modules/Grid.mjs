@@ -161,7 +161,6 @@ export class Grid extends BaseComponent
 
         // Инициируем отрисовку сущностей из ячеек
         this._collection.forEach(item => item.instance.render());
-
         // FIXME: DEBUG
         // this._ctx.font = "18px serif";
         // this._ctx.fillStyle = "#FF00FF"
