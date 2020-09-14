@@ -20,6 +20,16 @@ export const images = {
     buttonPress2: require('../images/button2_press.png')    // Кнопка, тип 2. Спрайт нажатия
 }
 
+// Набор спрайтов супер-тайлов
+export const superSprites = {
+    blue: require('../images/bolt-1-blue.png'),
+    purple: require('../images/bolt-2-purple.png'),
+    red: require('../images/bolt-3-red.png'),
+    yellow: require('../images/bolt-4-yellow.png'),
+    green: require('../images/bolt-5-green.png'),
+    brown: require('../images/bolt-6-brown.png')
+}
+
 // Конфигурация
 export const config = {
     screenWidth: 1000,      // Ширина экрана

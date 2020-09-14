@@ -109,8 +109,8 @@ export class BaseComponent
     getSize()
     {
         return {
-            width: this._width = width,
-            height: this._height = height
+            width: this._width,
+            height: this._height
         };
     }
 

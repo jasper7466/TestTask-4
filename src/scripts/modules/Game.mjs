@@ -1,6 +1,5 @@
 // Конфигурация
-import { config } from '../config';
-import { images } from '../config';
+import { config, images, superSprites } from '../config';
 
 // Модули и утилиты
 import { BlastEngine } from './BlastEngine';
@@ -26,6 +25,7 @@ export class Game
         this.screen = new Screen(holder, config.screenWidth, config.screenHeight);
         this.game = new BlastEngine(config.cellsX, config.cellsY, config.variety, config.minGroup, config.superGroup);
         this.assets = new ImageLoader(images);
+        this.superSprites = new ImageLoader(superSprites)
         this.tiles = new SpriteSplitter();
 
         this.gameScene = new MainScene(this);
@@ -57,7 +57,10 @@ export class Game
         this.screen.renderEngineStart();                // Стартуем движок
 
         // Начинаем загрузку ассетов
-        this.assets.load()
+        Promise.all([
+            this.assets.load(),
+            this.superSprites.load()
+        ])
         .then(() => {
             this.tiles.init(this.assets.images.tileBlock, 5);
             this.tiles.split()
@@ -82,8 +85,6 @@ export class Game
                 this.gameScene.collection.grid.addItem(tile, x, y);                     // Помещаем в узел сетки
             }
         }
-
-        // this.screen.setBackgroundImage(this.assets.images.background);
 
         // Добавляем сцены в движок
         this.screen.setScene(this.gameScene);
@@ -268,10 +269,13 @@ export class Game
                     if (this.state.group.length >= config.superGroup && !this.state.isBoosted && !this.state.supercell && !this.state.isShuffling)
                     {
                         this.game.setSuperCell(this.state.address.x, this.state.address.y);
-                        this.gameScene.collection.grid.getCell(this.state.address.x, this.state.address.y).instance.addParallelTask(blink(20));
+                        const sCell = this.gameScene.collection.grid.getCell(this.state.address.x, this.state.address.y).instance;
+                        sCell.setBackgroundImage(this.superSprites.images.blue);
+                        sCell.scaleOnBackgroundWidth(sCell.getSize().width);
+                        sCell.setAnchor(0, 0);
                     }
 
-                    // Обработка ситуации проигрыша по отсуттсвию ходов и бустеров
+                    // Обработка ситуации проигрыша по отсутствию ходов и бустеров
                     if (!this.state.shuffles && !this.state.boosters && !moves)
                         this.gameScene.collection.bannerLabel.setText('Вы проиграли');
 
