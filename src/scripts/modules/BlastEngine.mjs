@@ -15,14 +15,12 @@ export class BlastEngine
         this._empty_cell = -1;          // Тип, присваиваемый пустой ячейке
         this._super_cell = variety;     // Тип, присваиваемый "супер-ячейке"
         this._group = undefined;        // Выбранная группа однотипных ячеек
-
-        this.init();
-        this.randomFill();
     }
 
     // Инициализация
     init()
     {
+        this._field = [];
         for (let y = 0; y < this._cellsY; y++)
         {
             for (let x = 0; x < this._cellsX; x++)
@@ -37,6 +35,7 @@ export class BlastEngine
                 this._field.push(cell);
             }
         }
+        this.randomFill();
     }
 
     // Метод заполнения поля случайным образом

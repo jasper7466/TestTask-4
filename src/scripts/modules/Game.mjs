@@ -12,6 +12,7 @@ import { TileFactory } from '../utilities/TileFactory';
 import { MainScene } from '../scenes/MainScene';
 import { PreloaderScene } from '../scenes/PreloaderScene';
 import { StartScene } from '../scenes/StartScene';
+import { WinScene } from '../scenes/WinScene';
 
 // Анимации
 import { fade } from '../utilities/Animations';
@@ -28,29 +29,9 @@ export class Game
         this.superSprites = new ImageLoader(superSprites)
         this.tiles = new SpriteSplitter();
 
-        this.mainScene = new MainScene(this);
         this.preloaderScene = new PreloaderScene(this);
-        this.startScene = new StartScene(this);
 
         this.sprites = [];
-
-        // Объект для хранения состояния игры
-        this.state = {
-            isPressed: false,           // Флаг нажатия на тайл
-            isRemoving: false,          // Флаг "удаление в процессе"
-            isMoving: false,            // Флаг "перемещение в процессе"
-            isShuffling: false,         // Флаг "перемешивание в процессе"
-            isBoosted: false,           // Флаг включения бустера
-            isSupercell: false,         // Флаг "супер-клетка"
-            target: undefined,          // Сущность, на которой произошло событие нажатия
-            address: undefined,         // Адрес ячейки, содержащей сущность
-            group: [],                  // Выбранная группа ячеек (адреса/ссылки сущностей)
-            changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
-            moves: config.movesLimit,   // Оставшееся количество ходов
-            score: 0,                   // Количество очков
-            shuffles: config.shuffles,  // Оставшееся количество перемешиваний
-            boosters: config.boosters   // Оставшееся количество бустеров
-        }
 
         // Включаем сцену прелоадера.
         // Она текстовая и не требует ассетов, поэтому может быть включена сразу
@@ -75,8 +56,33 @@ export class Game
 
     init()
     {
+        this.mainScene = new MainScene(this);
+        this.startScene = new StartScene(this);
+        this.winScene = new WinScene(this);
+
+        // Объект для хранения состояния игры
+        this.state = {
+            isPressed: false,           // Флаг нажатия на тайл
+            isRemoving: false,          // Флаг "удаление в процессе"
+            isMoving: false,            // Флаг "перемещение в процессе"
+            isShuffling: false,         // Флаг "перемешивание в процессе"
+            isBoosted: false,           // Флаг включения бустера
+            isSupercell: false,         // Флаг "супер-клетка"
+            target: undefined,          // Сущность, на которой произошло событие нажатия
+            address: undefined,         // Адрес ячейки, содержащей сущность
+            group: [],                  // Выбранная группа ячеек (адреса/ссылки сущностей)
+            changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
+            moves: config.movesLimit,   // Оставшееся количество ходов
+            score: 0,                   // Количество очков
+            shuffles: config.shuffles,  // Оставшееся количество перемешиваний
+            boosters: config.boosters   // Оставшееся количество бустеров
+        }
+
         this.mainScene.init();
         this.startScene.init();
+        this.winScene.init();
+
+        this.game.init();
 
         // Заполняем сетку тайлами
         for (let x = 0; x < config.cellsX; x++)
@@ -92,7 +98,8 @@ export class Game
         // Добавляем сцены в движок
         this.screen.setScene(this.startScene);
 
-        // Добавляем циклический вызов функции игрового цикла и запускаем движок
+        // Добавляем циклический вызов функции игрового цикла
+        this.screen.clearTasks();
         this.screen.addTask(() => this.loop());
     }
 
@@ -149,6 +156,15 @@ export class Game
     startClickHandler()
     {
         return target => {
+            this.screen.setScene(this.mainScene);
+        }
+    }
+
+    // Обработчик события клика по кнопке "Играть ещё"
+    replayClickHandler()
+    {
+        return target => {
+            this.init();
             this.screen.setScene(this.mainScene);
         }
     }
@@ -266,7 +282,7 @@ export class Game
                 
                 // Обработка ситуации проигрыша/выигрыша по очкам и ходам
                 if (this.state.score >= config.scoreToWin)
-                    this.mainScene.collection.bannerLabel.setText('Вы победили');
+                    this.screen.setScene(this.winScene);
                 else if (this.state.moves == 0)
                     this.mainScene.collection.bannerLabel.setText('Вы проиграли');
                 else

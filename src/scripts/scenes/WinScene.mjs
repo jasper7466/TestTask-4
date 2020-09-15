@@ -6,8 +6,8 @@ import { Button } from '../modules/Button.mjs';
 
 import { config } from '../config';
 
-// Класс сцены стартового меню
-export class StartScene extends Scene
+// Класс сцены победы
+export class WinScene extends Scene
 {
     constructor(game)
     {
@@ -15,8 +15,8 @@ export class StartScene extends Scene
         this.game = game;
 
         this.addComponent('layout', new BaseComponent());
-        this.addComponent('title', new Label(70, '#FFF', 'Roboto Slab', 'Blast Puzzle'));
-        this.addComponent('startButton', new Button(30, '#FFF', 'Roboto Slab', 'Играть'));
+        this.addComponent('title', new Label(70, '#FFF', 'Roboto Slab', 'Вы победили!'));
+        this.addComponent('startButton', new Button(30, '#FFF', 'Roboto Slab', 'Играть ещё'));
     }
 
     init()
@@ -36,6 +36,6 @@ export class StartScene extends Scene
         this.collection.startButton.setPosition(config.screenWidth / 2, config.screenHeight / 1.7);
         this.collection.startButton.setAnchor(0.5, 0.5);
         this.collection.startButton.scaleOnBackgroundWidth(200);
-        this.collection.startButton.setClickHandler(this.game.startClickHandler());
+        this.collection.startButton.setClickHandler(this.game.replayClickHandler());
     }
 }

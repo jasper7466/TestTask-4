@@ -84,6 +84,12 @@ export class Screen
         this._taskQueue.push(callback);
     }
 
+    // Метод очистки очереди циклического выполнения
+    clearTasks()
+    {
+        this._taskQueue = [];
+    }
+
     // Метод установки сцены для рендеринга
     setScene(scene)
     {
