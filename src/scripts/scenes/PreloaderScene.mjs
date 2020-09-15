@@ -1,4 +1,5 @@
 import { Scene } from '../modules/Scene';
+
 import { Label } from '../modules/Label';
 
 import { config } from '../config';

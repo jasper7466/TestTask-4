@@ -11,10 +11,14 @@ export const images = {
     scorePanel: require('../images/score_panel.png'),       // Фон панели очков/ходов
     topPanel: require('../images/top_panel.png'),           // Фон верхней панели
     background: require('../images/background.png'),        // Фон игровой сцены
+    startBackground: require('../images/start_background.png'),    // Фон стартовой сцены
     progressPanel: require('../images/progress_panel.png'), // Фон панели прогресса
     pauseBase: require('../images/pause_base.png'),         // Кнопка "Пауза". Базовый спрайт
     pauseHover: require('../images/pause_hover.png'),       // Кнопка "Пауза". Спрайт наведения
     pausePress: require('../images/pause_press.png'),       // Кнопка "Пауза". Спрайт нажатия
+    buttonBase1: require('../images/button1_base.png'),     // Кнопка, тип 1. Базовый спрайт
+    buttonHover1: require('../images/button1_hover.png'),   // Кнопка, тип 1. Спрайт наведения
+    buttonPress1: require('../images/button1_press.png'),   // Кнопка, тип 1. Спрайт нажатия
     buttonBase2: require('../images/button2_base.png'),     // Кнопка, тип 2. Базовый спрайт
     buttonHover2: require('../images/button2_hover.png'),   // Кнопка, тип 2. Спрайт наведения
     buttonPress2: require('../images/button2_press.png')    // Кнопка, тип 2. Спрайт нажатия
