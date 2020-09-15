@@ -13,6 +13,7 @@ import { MainScene } from '../scenes/MainScene';
 import { PreloaderScene } from '../scenes/PreloaderScene';
 import { StartScene } from '../scenes/StartScene';
 import { WinScene } from '../scenes/WinScene';
+import { LoseScene } from '../scenes/LoseScene';
 
 // Анимации
 import { fade } from '../utilities/Animations';
@@ -59,7 +60,8 @@ export class Game
         this.mainScene = new MainScene(this);
         this.startScene = new StartScene(this);
         this.winScene = new WinScene(this);
-
+        this.loseScene = new LoseScene(this);
+        
         // Объект для хранения состояния игры
         this.state = {
             isPressed: false,           // Флаг нажатия на тайл
@@ -81,6 +83,7 @@ export class Game
         this.mainScene.init();
         this.startScene.init();
         this.winScene.init();
+        this.loseScene.init();
 
         this.game.init();
 
@@ -165,6 +168,7 @@ export class Game
     {
         return target => {
             this.init();
+            this.uiUnlock();
             this.screen.setScene(this.mainScene);
         }
     }
@@ -284,7 +288,7 @@ export class Game
                 if (this.state.score >= config.scoreToWin)
                     this.screen.setScene(this.winScene);
                 else if (this.state.moves == 0)
-                    this.mainScene.collection.bannerLabel.setText('Вы проиграли');
+                    this.screen.setScene(this.loseScene);
                 else
                 {
                     this.game.fixChanges();                  // Уравниваем текущие координаты с новыми
