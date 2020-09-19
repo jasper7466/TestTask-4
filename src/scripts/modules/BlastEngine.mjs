@@ -47,9 +47,10 @@ export class BlastEngine
     }
 
     // Метод получения параметров ячейки по её адресу
-    getCell(x, y)
+    getCell(x, y, source = undefined)
     {
-        return this._field.find(cell => cell.x == x && cell.y == y);
+        source = source ? source : this._field;
+        return source.find(cell => cell.x == x && cell.y == y);
     }
 
     // Метод установки типа "супер-клетка"
@@ -61,6 +62,54 @@ export class BlastEngine
     isSupercell(x, y)
     {
         return this.getCell(x, y).type == this._super_cell;
+    }
+
+    // Метод для проверки нахождения координат в пределах сетки
+    _validAddress(x, y)
+    {
+        const validX = x >= 0 && x < this._cellsX;
+        const validY = y >= 0 && y < this._cellsY;
+        return validX && validY;
+    }
+
+    // Метод получения соседних ячеек
+    _getSiblingCells(cell)
+    {
+        const cells = [];               // Массив объектов "ячейка"
+        const addresses = [             // Массив объектов "адрес"
+            {x: cell.x + 1, y: cell.y},
+            {x: cell.x - 1, y: cell.y},
+            {x: cell.x, y: cell.y + 1},
+            {x: cell.x, y: cell.y - 1}
+        ];
+        addresses.forEach(addr => {
+            const cell = this.getCell(addr.x, addr.y);
+            if (cell)
+                cells.push(cell);
+        });
+        return cells;
+    }
+
+    // Итеративный метод поиска группы
+    _getGroupIterative(cellX, cellY)
+    {
+        const group = []            // Группа
+
+        if (!this._validAddress(cellX, cellY))  // Проверяем валидность координат
+            return group;
+
+        const firstCell = this.getCell(cellX, cellY);   // Получаем "кликнутую" ячейку по её адресу
+        const type = firstCell.type;                    // Определяем тип элементов для поиска
+        group.push(firstCell);                          // Кладём первую ячейку в группу
+
+        for (let i = 0; i < group.length; i++)
+        {
+            this._getSiblingCells(group[i]).forEach(sibling => {                    // Получаем соседей ячейки
+                if (sibling.type == type && !group.find(cell => cell == sibling))   // Для каждого соседа сверяем тип и дубликат в группе
+                    group.push(sibling);                                            // Если найден новый уникальный элемент - добавляем его в группу
+            });
+        }
+        return group;
     }
 
     // Метод рекурсивного поиска группы однотипных соседних ячеек по координатам одной ячейки
@@ -114,7 +163,7 @@ export class BlastEngine
         if (this.getCell(cellX, cellY).type == this._super_cell)
             this._group = this.getCross(cellX, cellY);
         else
-            this._group = this._getGroup(cellX, cellY);
+            this._group = this._getGroupIterative(cellX, cellY);
         return this._group;
     }
 
