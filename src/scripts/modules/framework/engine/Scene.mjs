@@ -4,6 +4,7 @@ export class Scene
     constructor()
     {
         this.collection = {};           // Коллекция элементов сцены
+        this._eEnabled = true;           // Глобальный флаг разрешения событий любого типа
     }
 
     // Метод добавления элемента в сцену
@@ -30,6 +31,7 @@ export class Scene
         }
     }
 
+    // Обработчик события движения мыши
     onMove(x, y)
     {
         for (let item in this.collection)
@@ -37,6 +39,18 @@ export class Scene
             this.collection[item].onMove(x, y);
         }
 
+    }
+
+    // Метод запрета событий сцены
+    disableEvents()
+    {
+        this._eEnabled = false;
+    }
+
+    // Метод разрешения событий сцены
+    disableEvents()
+    {
+        this._eEnabled = true;
     }
 
     // Метод рендеринга сцены
