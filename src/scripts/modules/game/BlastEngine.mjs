@@ -1,4 +1,4 @@
-import { RandomIntInclusive } from '../utilities/Random.mjs';
+import { RandomIntInclusive } from '../../utilities/Random';
 
 // Класс игровой логики
 export class BlastEngine

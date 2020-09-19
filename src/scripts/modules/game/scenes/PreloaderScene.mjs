@@ -1,6 +1,6 @@
-import { Scene } from '../modules/Scene';
+import { Scene } from '../../framework/engine/Scene';
 
-import { Label } from '../modules/Label';
+import { Label } from '../../framework/components/Label';
 
 import { config } from '../config';
 

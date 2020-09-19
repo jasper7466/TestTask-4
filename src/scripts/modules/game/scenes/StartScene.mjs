@@ -1,8 +1,8 @@
-import { Scene } from '../modules/Scene';
+import { Scene } from '../../framework/engine/Scene';
 
-import { BaseComponent } from '../modules/BaseComponent.mjs';
-import { Label } from '../modules/Label';
-import { Button } from '../modules/Button.mjs';
+import { BaseComponent } from '../../framework/components/BaseComponent';
+import { Label } from '../../framework/components/Label';
+import { Button } from '../../framework/components/Button';
 
 import { config } from '../config';
 

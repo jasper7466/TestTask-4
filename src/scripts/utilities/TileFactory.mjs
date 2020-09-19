@@ -1,5 +1,5 @@
 // Класс базового компонента
-import { BaseComponent } from '../modules/BaseComponent.mjs';
+import { BaseComponent } from '../modules/framework/components/BaseComponent';
 
 // Точка привязки тайла
 const tile_anchor = [0, 0.109375];

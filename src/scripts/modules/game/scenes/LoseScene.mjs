@@ -1,13 +1,13 @@
-import { Scene } from '../modules/Scene';
+import { Scene } from '../../framework/engine/Scene';
 
-import { BaseComponent } from '../modules/BaseComponent.mjs';
-import { Label } from '../modules/Label';
-import { Button } from '../modules/Button.mjs';
+import { BaseComponent } from '../../framework/components/BaseComponent';
+import { Label } from '../../framework/components/Label';
+import { Button } from '../../framework/components/Button.mjs';
 
 import { config } from '../config';
 
-// Класс сцены победы
-export class WinScene extends Scene
+// Класс сцены проигрыша
+export class LoseScene extends Scene
 {
     constructor(game)
     {
@@ -15,7 +15,7 @@ export class WinScene extends Scene
         this.game = game;
 
         this.addComponent('layout', new BaseComponent());
-        this.addComponent('title', new Label(70, '#FFF', 'Roboto Slab', 'Вы победили!'));
+        this.addComponent('title', new Label(70, '#FFF', 'Roboto Slab', 'Вы проиграли'));
         this.addComponent('startButton', new Button(30, '#FFF', 'Roboto Slab', 'Играть ещё ?'));
     }
 

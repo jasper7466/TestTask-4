@@ -1,23 +1,23 @@
 // Конфигурация
-import { config, images, superSprites } from '../config';
+import { config, images, superSprites } from './config';
 
 // Модули и утилиты
 import { BlastEngine } from './BlastEngine';
-import { Screen } from './Screen';
-import { ImageLoader } from './ImageLoader';
-import { SpriteSplitter } from './SpriteSplitter';
-import { TileFactory } from '../utilities/TileFactory';
+import { Screen } from '../framework/engine/Screen';
+import { ImageLoader } from '../tools/ImageLoader';
+import { SpriteSplitter } from '../tools/SpriteSplitter';
+import { TileFactory } from '../../utilities/TileFactory';
 
 // Сцены
-import { MainScene } from '../scenes/MainScene';
-import { PreloaderScene } from '../scenes/PreloaderScene';
-import { StartScene } from '../scenes/StartScene';
-import { WinScene } from '../scenes/WinScene';
-import { LoseScene } from '../scenes/LoseScene';
+import { MainScene } from './scenes/MainScene';
+import { PreloaderScene } from './scenes/PreloaderScene';
+import { StartScene } from './scenes/StartScene';
+import { WinScene } from './scenes/WinScene';
+import { LoseScene } from './scenes/LoseScene';
 
 // Анимации
-import { fade } from '../utilities/Animations';
-import { move } from '../utilities/Animations';
+import { fade } from '../../utilities/Animations';
+import { move } from '../../utilities/Animations';
 
 export class Game
 {

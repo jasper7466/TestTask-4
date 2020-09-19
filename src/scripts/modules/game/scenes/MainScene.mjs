@@ -1,11 +1,11 @@
-import { Scene } from '../modules/Scene';
+import { Scene } from '../../framework/engine/Scene';
 
-import { Grid } from '../modules/Grid.mjs';
-import { BaseComponent } from '../modules/BaseComponent.mjs';
-import { Label } from '../modules/Label.mjs';
-import { Button } from '../modules/Button.mjs';
-import { ToggleButton } from '../modules/ToggleButton.mjs';
-import { ProgressBar } from '../modules/ProgressBar.mjs';
+import { Grid } from '../../framework/components/Grid';
+import { BaseComponent } from '../../framework/components/BaseComponent';
+import { Label } from '../../framework/components/Label';
+import { Button } from '../../framework/components/Button';
+import { ToggleButton } from '../../framework/components/ToggleButton';
+import { ProgressBar } from '../../framework/components/ProgressBar';
 
 import { config } from '../config';
 
