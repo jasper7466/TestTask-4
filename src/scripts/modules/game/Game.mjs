@@ -83,15 +83,11 @@ export class Game
         this.field.init();
         
         // Заполняем сетку тайлами
-        for (let x = 0; x < config.cellsX; x++)
-        {
-            for(let y = 0; y < config.cellsY; y++)
-            {
-                const tile = TileFactory(this.sprites, this.field.getCell(x, y).type);   // Создаём тайл
-                tile.setClickHandler(this.tileClickHandler(this.state));                // Вешаем обработчик события "клик"
-                this.mainScene.collection.grid.addItem(tile, x, y);                     // Помещаем в узел сетки
-            }
-        }
+        this.field.getField().forEach(cell => {
+            const tile = TileFactory(this.sprites, this.field.getCell(cell.x, cell.y).type);    // Создаём тайл
+            tile.setClickHandler(this.tileClickHandler(this.state));                            // Вешаем обработчик события "клик"
+            this.mainScene.collection.grid.addItem(tile, cell.x, cell.y);                       // Помещаем в узел сетки
+        });
 
         // Добавляем сцены в движок
         this.screen.setScene(this.startScene);

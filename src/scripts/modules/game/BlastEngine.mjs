@@ -48,7 +48,7 @@ export class BlastEngine
     // Метод получения копии поля (не глубокой)
     getField()
     {
-        field = [];
+        const field = [];
         this._field.forEach(item => field.push(Object.assign({}, item)));
         return field;
     }
