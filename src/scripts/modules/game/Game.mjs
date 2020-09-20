@@ -114,12 +114,12 @@ export class Game
             if (target.getState())
             {
                 this.mainScene.collection.bannerLabel.setText('Пауза');
-                this.uiLock();
+                this.mainScene.uiLock();
             }
             else
             {
                 this.mainScene.collection.bannerLabel.setText('');
-                this.uiUnlock();
+                this.mainScene.uiUnlock();
             }
         }
     }
@@ -160,26 +160,9 @@ export class Game
     {
         return target => {
             this.init();
-            this.uiUnlock();
+            this.mainScene.uiUnlock();
             this.screen.setScene(this.mainScene);
         }
-    }
-
-    // Блокировка пользовательского интерфейса
-    uiLock()
-    {
-        this.mainScene.collection.grid.stopEventPropagation();    // Блокируем распространение событий на поле
-        this.mainScene.collection.shuffleButton.disableEvents(); // Блокируем события кнопки "Перемешать"
-        this.mainScene.collection.boosterButton.disableEvents(); // Блокируем события кнопки "Бустер"
-    }
-
-    // Разблокировка пользовательского интерфейса
-    uiUnlock()
-    {
-        this.mainScene.collection.grid.allowEventPropagation();   // Разрешаем распространение событий на поле
-        this.mainScene.collection.shuffleButton.enableEvents();  // Разрешаем события кнопки "Перемешать"
-        if (this.state.boosters > 0)
-            this.mainScene.collection.boosterButton.enableEvents();  // Разрешаем события кнопки "Бустер"
     }
 
     loop()
@@ -208,7 +191,7 @@ export class Game
                 return;
             }
 
-            this.uiLock();   // Блокируем интерфейс
+            this.mainScene.uiLock();   // Блокируем интерфейс
             this.state.group = this.state.group.map(element => this.mainScene.collection.grid.getCell(element.x, element.y));   // Получаем ячейки
 
             // Для каждого адреса из группы на удаление ищем тайл и применяем анимацию исчезновения
@@ -309,7 +292,7 @@ export class Game
                     this.state.isShuffling = false;
 
                     // Разблокировка интерфейса
-                    this.uiUnlock()
+                    this.mainScene.uiUnlock();
                 }
             }
         }
@@ -317,7 +300,7 @@ export class Game
         // Перемешивание поля
         if (this.state.isShuffling && !this.state.isMoving)
         {            
-            this.uiLock();                       // Блокируем интерфейс
+            this.mainScene.uiLock();                       // Блокируем интерфейс
             this.field.shuffle();                 // Перемешиваем поле
             this.state.changes = [];             // Очищаем массив с изменёнными ячейками
             this.field._field.forEach(cell => {

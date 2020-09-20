@@ -138,4 +138,21 @@ export class MainScene extends Scene
         this.collection.scoreLabel.setText(this.game.state.score);
         this.collection.progress.setProgress(this.game.state.progress);
     }
+
+    // Метод блокировки пользовательского интерфейса
+    uiLock()
+    {
+        this.collection.grid.stopEventPropagation();        // Блокируем распространение событий на поле
+        this.collection.shuffleButton.disableEvents();      // Блокируем события кнопки "Перемешать"
+        this.collection.boosterButton.disableEvents();      // Блокируем события кнопки "Бустер"
+    }
+
+    // Метод разблокировки пользовательского интерфейса
+    uiUnlock()
+    {
+        this.collection.grid.allowEventPropagation();       // Разрешаем распространение событий на поле
+        this.collection.shuffleButton.enableEvents();       // Разрешаем события кнопки "Перемешать"
+        if (this.game.state.boosters > 0)
+            this.collection.boosterButton.enableEvents();   // Разрешаем события кнопки "Бустер"
+    }
 }
