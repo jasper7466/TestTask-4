@@ -3,13 +3,12 @@ import { RandomIntInclusive } from '../../utilities/Random';
 // Класс игровой логики
 export class BlastEngine
 {
-    constructor(cellsX, cellsY, variety, minGroup, superGroup)
+    constructor(cellsX, cellsY, variety, minGroup)
     {
         this._cellsX = cellsX;          // Количество ячеек по оси X
         this._cellsY = cellsY;          // Количество ячеек по оси Y
         this._variety = variety - 1;    // Количество вариаций типов ячеек
         this._minGroup = minGroup;      // Минимальный размер группы
-        this._superGroup = superGroup;  // Минимальный размер группы
 
         this._field = [];               // Будущий "двумерный" массив игрового поля
         this._empty_cell = -1;          // Тип, присваиваемый пустой ячейке
@@ -47,10 +46,9 @@ export class BlastEngine
     }
 
     // Метод получения параметров ячейки по её адресу
-    getCell(x, y, source = undefined)
+    getCell(x, y)
     {
-        source = source ? source : this._field;
-        return source.find(cell => cell.x == x && cell.y == y);
+        return this._field.find(cell => cell.x == x && cell.y == y);
     }
 
     // Метод установки типа "супер-клетка"
@@ -157,29 +155,10 @@ export class BlastEngine
         return this._group;
     }
 
-    // Метод для получения строки
-    getRow(cellX, cellY)
-    {
-        const group = [];
-
-        for (let x = 0; x < this._cellsX; x++)
-        {
-            group.push({x: x, y: cellY});
-        }
-        this._group = group;
-        return this._group;
-    }
-
-    // Метод сброса типа ячейки
-    clearCell(x, y)
-    {
-        this.getCell(x, y).type = this._empty_cell;
-    }
-
     // Метод сброса типов группы клеток
     clearGroup()
     {
-        this._group.forEach(cell => this.clearCell(cell.x, cell.y));
+        this._group.forEach(cell => this.getCell(cell.x, cell.y).type = this._empty_cell);
     }
 
     // Метод проверки на пустую ячейку
