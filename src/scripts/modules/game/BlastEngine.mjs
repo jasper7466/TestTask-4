@@ -91,7 +91,7 @@ export class BlastEngine
     }
 
     // Итеративный метод поиска группы
-    _getGroupIterative(cellX, cellY)
+    _getGroup(cellX, cellY)
     {
         const group = []            // Группа
 
@@ -112,58 +112,13 @@ export class BlastEngine
         return group;
     }
 
-    // Метод рекурсивного поиска группы однотипных соседних ячеек по координатам одной ячейки
-    _getGroup(cellX, cellY, type = undefined, group = [])
-    {
-        // Проверяем валидность координат (должны лежать в пределах сетки)
-        const validX = cellX >= 0 && cellX < this._cellsX;
-        const validY = cellY >= 0 && cellY < this._cellsY;
-        if (!validX || !validY)
-            return group;
-        
-        // Если это первый вызов метода - определяем искомый тип элементов группы
-        if (type === undefined)
-        {
-            type = this.getCell(cellX, cellY).type;
-            // Рекурсивно вызываем этот же метод, но уже с типом и массивом группы
-            return this._getGroup(cellX, cellY, type, group);
-        }
-
-        const cell = this.getCell(cellX, cellY);
-
-        // Проверяем совпадение типов по переданным координатам
-        if (cell.type != type)
-            return group;
-        
-        // Если эти координаты уже проверялись ранее - пропускаем их обработку
-        if (group.find(cell => cell.x == cellX && cell.y == cellY))
-            return group;
-
-        // Если добрались до этого места - добавляем ячейку в группу
-        group.push({x: cellX, y: cellY});
-
-        // Формируем массив для проверки соседних ячеек
-        const adjacent = [
-            {x: cellX + 1, y: cellY},
-            {x: cellX - 1, y: cellY},
-            {x: cellX, y: cellY + 1},
-            {x: cellX, y: cellY - 1}
-        ];
-
-        // Рекурсивно вызываем метод для соседних ячеек
-        adjacent.forEach(cell => this._getGroup(cell.x, cell.y, type, group));
-
-        // На последней итерации вернём массив с координатами ячеек группы
-        return group;
-    }
-
     // Метод выдачи группы найденных ячеек во внешние интерфейсы
     getGroup(cellX, cellY)
     {
         if (this.getCell(cellX, cellY).type == this._super_cell)
             this._group = this.getCross(cellX, cellY);
         else
-            this._group = this._getGroupIterative(cellX, cellY);
+            this._group = this._getGroup(cellX, cellY);
         return this._group;
     }
 
