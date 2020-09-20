@@ -4,7 +4,20 @@ export class Scene
     constructor()
     {
         this.collection = {};           // Коллекция элементов сцены
-        this._eEnabled = true;           // Глобальный флаг разрешения событий любого типа
+        this._eEnabled = true;          // Глобальный флаг разрешения событий любого типа
+        this._initialised = false;      // Флаг инициализации сцены
+    }
+
+    // Метод инициализации сцены
+    init()
+    {
+        this._initialised = true;
+    }
+
+    // Метод проверки инициализации
+    isInit()
+    {
+        return this._initialised;
     }
 
     // Метод добавления элемента в сцену

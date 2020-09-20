@@ -80,13 +80,8 @@ export class Game
             boosters: config.boosters   // Оставшееся количество бустеров
         }
 
-        this.mainScene.init();
-        this.startScene.init();
-        this.winScene.init();
-        this.loseScene.init();
-
         this.game.init();
-
+        
         // Заполняем сетку тайлами
         for (let x = 0; x < config.cellsX; x++)
         {

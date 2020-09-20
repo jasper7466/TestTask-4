@@ -27,14 +27,20 @@ export class Grid extends BaseComponent
     {
         this._stepX = (this._width - this._width * this._paddingH) / this._cellsX;
         this._stepY = (this._height - this._height * this._paddingV) / this._cellsY;
+
+        this._collection.forEach(item => {
+            const relocation = this.getCellLocation(item.cellX, item.cellY);
+            item.instance.setPosition(relocation.x, relocation.y);
+            item.instance.scaleOnBackgroundWidth(this._stepX);   // FIXME: частный случай
+        });
         // this._alignX = (this._width - this._stepX * this._cellsX) / 2;
         // this._alignY = (this._height - this._stepY * this._cellsY) / 2;
     }
 
-    // Метод установки размеров контейнера
-    setSize(x, y)
+    // Расширенный метод пересчёта параметров
+    _refresh()
     {
-        super.setSize(x, y);
+        super._refresh();
         this._gridRecalc();
     }
 

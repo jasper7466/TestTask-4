@@ -21,7 +21,8 @@ export class StartScene extends Scene
 
     init()
     {
-
+        super.init();
+        
         // Фон
         this.collection.layout.setBackgroundImage(this.game.assets.images.startBackground);
         this.collection.layout.setSize(config.screenWidth, config.screenHeight);

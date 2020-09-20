@@ -13,11 +13,12 @@ export class PreloaderScene extends Scene
         this.game = game;
 
         this.addComponent('waitLabel', new Label(50, '#000', 'Roboto Slab', 'Загрузка...'));
-        this.init();
     }
 
     init()
     {
+        super.init();
+        
         // Надпись "Загрузка"
         this.collection.waitLabel.setPosition(config.screenWidth / 2, config.screenHeight / 2);
     }

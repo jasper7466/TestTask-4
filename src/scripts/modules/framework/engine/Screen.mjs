@@ -93,6 +93,8 @@ export class Screen
     // Метод установки сцены для рендеринга
     setScene(scene)
     {
+        if (!scene.isInit())
+            scene.init();
         this._renderScene = scene;
     }
 

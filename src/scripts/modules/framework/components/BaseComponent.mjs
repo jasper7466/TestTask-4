@@ -13,12 +13,12 @@ export class BaseComponent
         this._anchorY = 0;                  // Точка привязки по оси Y
         this._background = undefined;       // Фоновое изображение
         this._alpha = 1;                    // Прозрачность компонента
-        this._borders = {                   // Координаты границ
-            leftTop: 0,
-            rightTop: 0,
-            leftBottom: 0,
-            rightBottom: 0
-        };
+        // this._borders = {                   // Координаты границ
+        //     leftTop: 0,
+        //     rightTop: 0,
+        //     leftBottom: 0,
+        //     rightBottom: 0
+        // };
 
         this._hitbox = {                    // Зона hitbox'а
             left: 0,                        // Применяется при обработке событий взаимодействия с компонентом
@@ -59,19 +59,18 @@ export class BaseComponent
         this._dx = this._x - this._width * this._anchorX;
         this._dy = this._y - this._height * this._anchorY;
 
-        this._borders.leftTop = this._dx;
-        this._borders.leftTop = this._dx;
+        // this._borders.leftTop = this._dx;
+        // this._borders.leftTop = this._dx;
 
-        
-        // Вычисляем смещение относительно точки привязки
-        const aX = this._width * this._anchorX;
-        const aY = this._height * this._anchorY;
+        // // Вычисляем смещение относительно точки привязки
+        // const aX = this._width * this._anchorX;
+        // const aY = this._height * this._anchorY;
 
-        // Вычисляем абсолютное значение оффсетов для текущих параметров
-        const left = this._x + this._width * this._hitbox.left - aX;
-        const right = this._x + this._width - this._width * this._hitbox.right - aX;
-        const top = this._y + this._height * this._hitbox.top - aY;
-        const bottom = this._y + this._height - this._height * this._hitbox.bottom - aY;
+        // // Вычисляем абсолютное значение оффсетов для текущих параметров
+        // const left = this._x + this._width * this._hitbox.left - aX;
+        // const right = this._x + this._width - this._width * this._hitbox.right - aX;
+        // const top = this._y + this._height * this._hitbox.top - aY;
+        // const bottom = this._y + this._height - this._height * this._hitbox.bottom - aY;
     }
 
     // Метод получения текущего положения
