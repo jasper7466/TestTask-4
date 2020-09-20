@@ -45,6 +45,14 @@ export class BlastEngine
         return refilment;
     }
 
+    // Метод получения копии поля (не глубокой)
+    getField()
+    {
+        field = [];
+        this._field.forEach(item => field.push(Object.assign({}, item)));
+        return field;
+    }
+
     // Метод получения параметров ячейки по её адресу
     getCell(x, y)
     {
