@@ -77,7 +77,8 @@ export class Game
             moves: config.movesLimit,   // Оставшееся количество ходов
             score: 0,                   // Количество очков
             shuffles: config.shuffles,  // Оставшееся количество перемешиваний
-            boosters: config.boosters   // Оставшееся количество бустеров
+            boosters: config.boosters,  // Оставшееся количество бустеров
+            progress: 0                 // Прогресс
         }
 
         this.field.init();
@@ -274,9 +275,8 @@ export class Game
                     tile.setY(-100 - cell.y * this.mainScene.collection.grid._stepY);           // FIXME:
                     tile.addSerialTask(move(loc.x, loc.y, 100, 600));
                 });
-                this.mainScene.collection.movesLabel.setText( this.state.moves);           // Выводим количество оставшихся шагов,
-                this.mainScene.collection.scoreLabel.setText(this.state.score);               // очков
-                this.mainScene.collection.progress.setProgress(this.state.score / config.scoreToWin); // и обновляем прогресс
+                this.state.progress = this.state.score / config.scoreToWin;             // Обновляем прогресс
+                this.mainScene.updateStats() ;
                 
                 // Обработка ситуации проигрыша/выигрыша по очкам и ходам
                 if (this.state.score >= config.scoreToWin)

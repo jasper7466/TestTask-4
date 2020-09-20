@@ -130,4 +130,12 @@ export class MainScene extends Scene
         // Заголовок "Прогресс"
         this.collection.progressLabel.setPosition(config.screenWidth / 2, 15);
     }
+
+    // Метод обновления показателей
+    updateStats()
+    {
+        this.collection.movesLabel.setText(this.game.state.moves);
+        this.collection.scoreLabel.setText(this.game.state.score);
+        this.collection.progress.setProgress(this.game.state.progress);
+    }
 }
