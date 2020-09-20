@@ -37,6 +37,16 @@ export class LoseScene extends Scene
         this.collection.startButton.setPosition(config.screenWidth / 2, config.screenHeight / 1.7);
         this.collection.startButton.setAnchor(0.5, 0.5);
         this.collection.startButton.scaleOnBackgroundWidth(250);
-        this.collection.startButton.setClickHandler(this.game.replayClickHandler());
+        this.collection.startButton.setClickHandler(this.replayClickHandler());
+    }
+
+    // Обработчик события клика по кнопке "Играть ещё"
+    replayClickHandler()
+    {
+        return target => {
+            this.game.init();
+            this.game.mainScene.uiUnlock();
+            this.game.screen.setScene(this.game.mainScene);
+        }
     }
 }

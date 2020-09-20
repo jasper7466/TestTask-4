@@ -98,16 +98,6 @@ export class Game
         this.screen.addTask(() => this.loop());
     }
 
-    // Обработчик события клика по кнопке "Играть ещё"
-    replayClickHandler()
-    {
-        return target => {
-            this.init();
-            this.mainScene.uiUnlock();
-            this.screen.setScene(this.mainScene);
-        }
-    }
-
     loop()
     {
         // >>> Этап 1 - нажатие на тайл
