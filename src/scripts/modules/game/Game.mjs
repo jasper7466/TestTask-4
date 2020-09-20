@@ -98,14 +98,6 @@ export class Game
         this.screen.addTask(() => this.loop());
     }
 
-    // Обработчик события клика по кнопке "Старт"
-    startClickHandler()
-    {
-        return target => {
-            this.screen.setScene(this.mainScene);
-        }
-    }
-
     // Обработчик события клика по кнопке "Играть ещё"
     replayClickHandler()
     {

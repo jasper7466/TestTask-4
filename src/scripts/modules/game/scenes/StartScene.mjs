@@ -37,6 +37,14 @@ export class StartScene extends Scene
         this.collection.startButton.setPosition(config.screenWidth / 2, config.screenHeight / 1.7);
         this.collection.startButton.setAnchor(0.5, 0.5);
         this.collection.startButton.scaleOnBackgroundWidth(200);
-        this.collection.startButton.setClickHandler(this.game.startClickHandler());
+        this.collection.startButton.setClickHandler(this.startClickHandler());
+    }
+
+    // Обработчик события клика по кнопке "Старт"
+    startClickHandler()
+    {
+        return target => {
+            this.game.screen.setScene(this.game.mainScene);
+        }
     }
 }
