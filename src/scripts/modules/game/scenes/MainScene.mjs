@@ -85,7 +85,7 @@ export class MainScene extends Scene
         this.collection.shuffleButton.setAnchor(0.5, 0.5);
         this.collection.shuffleButton.scaleOnBackgroundWidth(200);
         this.collection.shuffleButton.setSize(200, 60);
-        this.collection.shuffleButton.setClickHandler(this.game.shuffleClickHandler());
+        this.collection.shuffleButton.setClickHandler(this.shuffleClickHandler());
 
         // Кнопка "Бустер"
         this.collection.boosterButton.setBaseImage(this.game.assets.images.buttonBase2);
@@ -95,7 +95,7 @@ export class MainScene extends Scene
         this.collection.boosterButton.setAnchor(0.5, 0.5);
         this.collection.boosterButton.scaleOnBackgroundWidth(200);
         this.collection.boosterButton.setSize(200, 60);
-        this.collection.boosterButton.setClickHandler(this.game.boosterClickHandler());
+        this.collection.boosterButton.setClickHandler(this.boosterClickHandler());
 
         // Кнопка "Пауза"
         this.collection.pauseButton.setBaseImage(this.game.assets.images.pauseBase);
@@ -104,7 +104,7 @@ export class MainScene extends Scene
         this.collection.pauseButton.setPosition(930, 50);
         this.collection.pauseButton.setAnchor(0.5, 0.5);
         this.collection.pauseButton.scaleOnBackgroundWidth(60);
-        this.collection.pauseButton.setClickHandler(this.game.pauseClickHandler());
+        this.collection.pauseButton.setClickHandler(this.pauseClickHandler());
 
         // Полоса прогресса
         this.collection.progress.setBackgroundImage(this.game.assets.images.barBack);
@@ -154,5 +154,51 @@ export class MainScene extends Scene
         this.collection.shuffleButton.enableEvents();       // Разрешаем события кнопки "Перемешать"
         if (this.game.state.boosters > 0)
             this.collection.boosterButton.enableEvents();   // Разрешаем события кнопки "Бустер"
+    }
+
+    // Обработчик события клика по тайлу
+    tileClickHandler()
+    {
+        return target => {
+             this.game.state.isPressed = true;     // Выставляем флаг нажатия
+             this.game.state.target = target;      // Указываем ссылку на сущность
+        }
+    }
+
+    // Обработчик события клика по кнопке "Пауза"
+    pauseClickHandler()
+    {
+        return target => {
+            if (target.getState())
+            {
+                this.collection.bannerLabel.setText('Пауза');
+                this.uiLock();
+            }
+            else
+            {
+                this.collection.bannerLabel.setText('');
+                this.uiUnlock();
+            }
+        }
+    }
+
+    // Обработчик события клика по кнопке "Бустер"
+    boosterClickHandler()
+    {
+        return target => {
+            this.game.state.isBoosted = (target.getState() && this.game.state.boosters > 0);
+        }
+    }
+
+    // Обработчик события клика по кнопке "Перемешать"
+    shuffleClickHandler()
+    {
+        return target => {
+            if (this.game.state.shuffles == 0)
+                return;
+            this.game.state.shuffles--;
+            target.setText(`Перемешать (x${this.game.state.shuffles})`);
+            this.game.state.isShuffling = true;
+        }
     }
 }

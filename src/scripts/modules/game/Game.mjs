@@ -86,7 +86,7 @@ export class Game
         // Заполняем сетку тайлами
         this.field.getField().forEach(cell => {
             const tile = TileFactory(this.sprites, this.field.getCell(cell.x, cell.y).type);    // Создаём тайл
-            tile.setClickHandler(this.tileClickHandler(this.state));                            // Вешаем обработчик события "клик"
+            tile.setClickHandler(this.mainScene.tileClickHandler());                            // Вешаем обработчик события "клик"
             this.mainScene.collection.grid.addItem(tile, cell.x, cell.y);                       // Помещаем в узел сетки
         });
 
@@ -96,55 +96,6 @@ export class Game
         // Добавляем циклический вызов функции игрового цикла
         this.screen.clearTasks();
         this.screen.addTask(() => this.loop());
-    }
-
-    // Обработчик события клика по тайлу
-    tileClickHandler()
-    {
-        return target => {
-             this.state.isPressed = true;     // Выставляем флаг нажатия
-             this.state.target = target;      // Указываем ссылку на сущность
-        }
-    }
-
-    // Обработчик события клика по кнопке "Пауза"
-    pauseClickHandler()
-    {
-        return target => {
-            if (target.getState())
-            {
-                this.mainScene.collection.bannerLabel.setText('Пауза');
-                this.mainScene.uiLock();
-            }
-            else
-            {
-                this.mainScene.collection.bannerLabel.setText('');
-                this.mainScene.uiUnlock();
-            }
-        }
-    }
-
-    // Обработчик события клика по кнопке "Бустер"
-    boosterClickHandler()
-    {
-        return target => {
-            if (target.getState() &&  this.state.boosters > 0)
-                 this.state.isBoosted = true;
-            else
-                 this.state.isBoosted = false;
-        }
-    }
-
-    // Обработчик события клика по кнопке "Перемешать"
-    shuffleClickHandler()
-    {
-        return target => {
-            if (this.state.shuffles == 0)
-                return;
-            this.state.shuffles--;
-            target.setText(`Перемешать (x${this.state.shuffles})`);
-            this.state.isShuffling = true;
-        }
     }
 
     // Обработчик события клика по кнопке "Старт"
@@ -252,7 +203,7 @@ export class Game
 
                 refilment.forEach(cell => {
                     const tile = TileFactory(this.sprites, cell.type);                  // Создаём тайл
-                    tile.setClickHandler(this.tileClickHandler(this.state));            // Вешаем обработчик события "клик"
+                    tile.setClickHandler(this.mainScene.tileClickHandler());            // Вешаем обработчик события "клик"
                     this.mainScene.collection.grid.addItem(tile, cell.x, cell.y);       // Помещаем в узел сетки
                     let loc = this.mainScene.collection.grid.getCellLocation(cell.x, cell.y);
                     tile.setY(-100 - cell.y * this.mainScene.collection.grid._stepY);           // FIXME:
