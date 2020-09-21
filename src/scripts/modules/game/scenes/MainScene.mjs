@@ -156,15 +156,6 @@ export class MainScene extends Scene
             this.collection.boosterButton.enableEvents();   // Разрешаем события кнопки "Бустер"
     }
 
-    // Обработчик события клика по тайлу
-    tileClickHandler()
-    {
-        return target => {
-             this.game.state.isPressed = true;     // Выставляем флаг нажатия
-             this.game.state.target = target;      // Указываем ссылку на сущность
-        }
-    }
-
     // Обработчик события клика по кнопке "Пауза"
     pauseClickHandler()
     {

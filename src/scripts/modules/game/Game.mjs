@@ -3,6 +3,7 @@ import { config, images, superSprites } from './config';
 
 // Модули и утилиты
 import { BlastEngine } from './BlastEngine';
+import { GameField } from './GameField';
 import { Screen } from '../framework/engine/Screen';
 import { ImageLoader } from '../tools/ImageLoader';
 import { SpriteSplitter } from '../tools/SpriteSplitter';
@@ -25,7 +26,7 @@ export class Game
     {
         // Создаём необходимые сущности
         this.screen = new Screen(holder, config.screenWidth, config.screenHeight);
-        this.field = new BlastEngine(config.cellsX, config.cellsY, config.variety, config.minGroup, config.superGroup);
+        this.gameLogic = new BlastEngine(config.cellsX, config.cellsY, config.variety, config.minGroup, config.superGroup);
         this.assets = new ImageLoader(images);
         this.superSprites = new ImageLoader(superSprites)
         this.tiles = new SpriteSplitter();
@@ -61,6 +62,8 @@ export class Game
         this.startScene = new StartScene(this);
         this.winScene = new WinScene(this);
         this.loseScene = new LoseScene(this);
+
+        this.gameField = new GameField(this.gameLogic, this.mainScene.collection.grid, this.sprites, () => this.tileClickHandler());
         
         // Объект для хранения состояния игры
         this.state = {
@@ -81,21 +84,19 @@ export class Game
             progress: 0                 // Прогресс
         }
 
-        this.field.init();
-        
-        // Заполняем сетку тайлами
-        this.field.getField().forEach(cell => {
-            const tile = TileFactory(this.sprites, this.field.getCell(cell.x, cell.y).type);    // Создаём тайл
-            tile.setClickHandler(this.mainScene.tileClickHandler());                            // Вешаем обработчик события "клик"
-            this.mainScene.collection.grid.addItem(tile, cell.x, cell.y);                       // Помещаем в узел сетки
-        });
+        this.gameField.refill();                    // Заполняем сетку тайлами
+        this.screen.setScene(this.startScene);      // Включаем сцену стартового меню
+        this.screen.clearTasks();                   // Чистим очередь задач в движке
+        this.screen.addTask(() => this.loop());     // Добавляем циклический вызов функции игрового цикла
+    }
 
-        // Добавляем сцены в движок
-        this.screen.setScene(this.startScene);
-
-        // Добавляем циклический вызов функции игрового цикла
-        this.screen.clearTasks();
-        this.screen.addTask(() => this.loop());
+    // Обработчик события клика по тайлу
+    tileClickHandler()
+    {
+        return target => {
+            this.state.isPressed = true;     // Выставляем флаг нажатия
+            this.state.target = target;      // Указываем ссылку на сущность
+        }
     }
 
     loop()
@@ -108,14 +109,14 @@ export class Game
             // Получаем группу адресов ячеек на удаление
             if (this.state.isBoosted)                                // Если включен режим "Бустер"
             {
-                this.state.group = this.field.getRadius(this.state.address.x, this.state.address.y, config.boostR);
+                this.state.group = this.gameLogic.getRadius(this.state.address.x, this.state.address.y, config.boostR);
                 this.state.boosters--;
                 this.mainScene.collection.boosterButton.setText(`Бустер (x${ this.state.boosters})`);
             }
             else                                                // Если обычный тайл или "супер-тайл"
             {
-                this.state.supercell = this.field.isSupercell(this.state.address.x, this.state.address.y);
-                this.state.group = this.field.getGroup(this.state.address.x, this.state.address.y);
+                this.state.supercell = this.gameLogic.isSupercell(this.state.address.x, this.state.address.y);
+                this.state.group = this.gameLogic.getGroup(this.state.address.x, this.state.address.y);
             }
 
             if (this.state.group.length < config.minGroup)                  // Ограничение на минимальную группу тайлов
@@ -152,8 +153,8 @@ export class Game
             // Если анимации завершены
             if (!this.state.isRemoving)
             {
-                this.field.collapse();                    // Инициируем смещение клеток
-                this.state.changes = this.field.getChanges();  // Получаем список сместившихся клеток
+                this.gameLogic.collapse();                    // Инициируем смещение клеток
+                this.state.changes = this.gameLogic.getChanges();  // Получаем список сместившихся клеток
                 // Применяем анимацию смещения
                 this.state.changes = this.state.changes.map(change => {
                     const cell = this.mainScene.collection.grid.getCell(change.dx, change.dy);
@@ -181,18 +182,18 @@ export class Game
             if (!this.state.isMoving)
             {
                 this.mainScene.collection.grid.updateItems();                     // Обновляем координаты элементов в сетке
-                const refilment = this.field.randomFill();    // Заполняем пустые ячейки, получаем массив новых ячеек
+                const refilment = this.gameLogic.randomFill();    // Заполняем пустые ячейки, получаем массив новых ячеек
 
                 refilment.forEach(cell => {
                     const tile = TileFactory(this.sprites, cell.type);                  // Создаём тайл
-                    tile.setClickHandler(this.mainScene.tileClickHandler());            // Вешаем обработчик события "клик"
+                    tile.setClickHandler(this.tileClickHandler());            // Вешаем обработчик события "клик"
                     this.mainScene.collection.grid.addItem(tile, cell.x, cell.y);       // Помещаем в узел сетки
                     let loc = this.mainScene.collection.grid.getCellLocation(cell.x, cell.y);
                     tile.setY(-100 - cell.y * this.mainScene.collection.grid._stepY);           // FIXME:
                     tile.addSerialTask(move(loc.x, loc.y, 100, 600));
                 });
                 this.state.progress = this.state.score / config.scoreToWin;             // Обновляем прогресс
-                this.mainScene.updateStats() ;
+                this.mainScene.updateStats();
                 
                 // Обработка ситуации проигрыша/выигрыша по очкам и ходам
                 if (this.state.score >= config.scoreToWin)
@@ -201,14 +202,14 @@ export class Game
                     this.screen.setScene(this.loseScene);
                 else
                 {
-                    this.field.fixChanges();                  // Уравниваем текущие координаты с новыми
-                    const moves = this.field.getMoves();      // Пересчитываем доступные ходы
-                    this.mainScene.collection.groupsLabel.setText(`Доступно ходов: ${this.field.getMoves()}`);
+                    this.gameLogic.fixChanges();                  // Уравниваем текущие координаты с новыми
+                    const moves = this.gameLogic.getMoves();      // Пересчитываем доступные ходы
+                    this.mainScene.collection.groupsLabel.setText(`Доступно ходов: ${this.gameLogic.getMoves()}`);
 
                     // Обработка ситуации появления "супер-тайла"
                     if (this.state.group.length >= config.superGroup && !this.state.isBoosted && !this.state.supercell && !this.state.isShuffling)
                     {
-                        this.field.setSuperCell(this.state.address.x, this.state.address.y);
+                        this.gameLogic.setSuperCell(this.state.address.x, this.state.address.y);
                         const sCell = this.mainScene.collection.grid.getCell(this.state.address.x, this.state.address.y).instance;
                         sCell.setBackgroundImage(this.superSprites.images.blue);
                         sCell.scaleOnBackgroundWidth(sCell.getSize().width);
@@ -234,9 +235,9 @@ export class Game
         if (this.state.isShuffling && !this.state.isMoving)
         {            
             this.mainScene.uiLock();                       // Блокируем интерфейс
-            this.field.shuffle();                 // Перемешиваем поле
+            this.gameLogic.shuffle();                 // Перемешиваем поле
             this.state.changes = [];             // Очищаем массив с изменёнными ячейками
-            this.field._field.forEach(cell => {
+            this.gameLogic._field.forEach(cell => {
                 const tile = this.mainScene.collection.grid.getCell(cell.dx, cell.dy);                // Получаем ячейку
                 let loc = this.mainScene.collection.grid.getCellLocation(cell.x, cell.y);             // Получаем новые координаты
                 tile.instance.addSerialTask(move(loc.x, loc.y, 100, 300));  // Запускаем анимацию перемещения
