@@ -38,6 +38,7 @@ export class MainScene extends Scene
     init()
     {
         super.init();
+        console.log('init');
         
         // Фон
         this.collection.layout.setBackgroundImage(this.game.assets.images.background);
@@ -137,6 +138,8 @@ export class MainScene extends Scene
         this.collection.movesLabel.setText(this.game.state.moves);
         this.collection.scoreLabel.setText(this.game.state.score);
         this.collection.progress.setProgress(this.game.state.progress);
+        this.collection.boosterButton.setText(`Бустер (x${this.game.state.boosters})`);
+        this.collection.groupsLabel.setText(`Доступно ходов: ${this.game.state.movesAvailable}`);
     }
 
     // Метод блокировки пользовательского интерфейса

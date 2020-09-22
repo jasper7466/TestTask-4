@@ -134,6 +134,7 @@ export class BaseComponent
     setBackgroundImage(img)
     {
         this._background = img;
+        this._refresh();
     }
 
     // Метод изменения размера под фоновое изображение

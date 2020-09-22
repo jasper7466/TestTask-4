@@ -34,13 +34,12 @@ export class BlastEngine
                 this._field.push(cell);
             }
         }
-        this.randomFill();
     }
 
     // Метод заполнения поля случайным образом
     randomFill()
     {
-        const refilment = this._field.filter(cell => cell.type === this._empty_cell);   // Получаем набор ячеек для обновления
+        const refilment = this._field.filter(cell => cell.type == this._empty_cell);   // Получаем набор ячеек для обновления
         refilment.forEach(cell => cell.type = RandomIntInclusive(0, this._variety));    // Заполняем тип ячеек
         return refilment;
     }

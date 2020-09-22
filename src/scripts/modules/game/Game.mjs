@@ -78,16 +78,18 @@ export class Game
             group: [],                  // Выбранная группа ячеек (адреса/ссылки сущностей)
             changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
             moves: config.movesLimit,   // Оставшееся количество ходов
+            movesAvailable: 0,          // Доступное количество ходов
             score: 0,                   // Количество очков
             shuffles: config.shuffles,  // Оставшееся количество перемешиваний
             boosters: config.boosters,  // Оставшееся количество бустеров
             progress: 0                 // Прогресс
         }
 
-        this.gameField.refill();                    // Заполняем сетку тайлами
         this.screen.setScene(this.startScene);      // Включаем сцену стартового меню
         this.screen.clearTasks();                   // Чистим очередь задач в движке
         this.screen.addTask(() => this.loop());     // Добавляем циклический вызов функции игрового цикла
+        this.mainScene.init();                      // Инициализируем основную сцену
+        this.gameField.refill();                    // Заполняем сетку тайлами
     }
 
     // Обработчик события клика по тайлу
@@ -99,8 +101,19 @@ export class Game
         }
     }
 
+    // Обработчик события клика по кнопке "Играть ещё"
+    replayClickHandler()
+    {
+        return target => {
+            this.init();
+            this.mainScene.uiUnlock();
+            this.screen.setScene(this.mainScene);
+        }
+    }
+
     loop()
     {
+        // this.gameField.refill();                    // Заполняем сетку тайлами
         // >>> Этап 1 - нажатие на тайл
         if (this.state.isPressed)
         {
@@ -111,7 +124,6 @@ export class Game
             {
                 this.state.group = this.gameLogic.getRadius(this.state.address.x, this.state.address.y, config.boostR);
                 this.state.boosters--;
-                this.mainScene.collection.boosterButton.setText(`Бустер (x${ this.state.boosters})`);
             }
             else                                                // Если обычный тайл или "супер-тайл"
             {
@@ -181,19 +193,9 @@ export class Game
 
             if (!this.state.isMoving)
             {
-                this.mainScene.collection.grid.updateItems();                     // Обновляем координаты элементов в сетке
-                const refilment = this.gameLogic.randomFill();    // Заполняем пустые ячейки, получаем массив новых ячеек
-
-                refilment.forEach(cell => {
-                    const tile = TileFactory(this.sprites, cell.type);                  // Создаём тайл
-                    tile.setClickHandler(this.tileClickHandler());            // Вешаем обработчик события "клик"
-                    this.mainScene.collection.grid.addItem(tile, cell.x, cell.y);       // Помещаем в узел сетки
-                    let loc = this.mainScene.collection.grid.getCellLocation(cell.x, cell.y);
-                    tile.setY(-100 - cell.y * this.mainScene.collection.grid._stepY);           // FIXME:
-                    tile.addSerialTask(move(loc.x, loc.y, 100, 600));
-                });
+                this.mainScene.collection.grid.updateItems();       // Обновляем координаты элементов в сетке
+                const refilment = this.gameField.refill();          // Заполняем пустые ячейки, получаем массив новых ячеек
                 this.state.progress = this.state.score / config.scoreToWin;             // Обновляем прогресс
-                this.mainScene.updateStats();
                 
                 // Обработка ситуации проигрыша/выигрыша по очкам и ходам
                 if (this.state.score >= config.scoreToWin)
@@ -202,9 +204,9 @@ export class Game
                     this.screen.setScene(this.loseScene);
                 else
                 {
-                    this.gameLogic.fixChanges();                  // Уравниваем текущие координаты с новыми
-                    const moves = this.gameLogic.getMoves();      // Пересчитываем доступные ходы
-                    this.mainScene.collection.groupsLabel.setText(`Доступно ходов: ${this.gameLogic.getMoves()}`);
+                    this.gameLogic.fixChanges();                            // Уравниваем текущие координаты с новыми
+                    const moves = this.gameLogic.getMoves();                // Пересчитываем доступные ходы
+                    this.state.movesAvailable =  this.gameLogic.getMoves(); // Определяем оставшиеся ходы
 
                     // Обработка ситуации появления "супер-тайла"
                     if (this.state.group.length >= config.superGroup && !this.state.isBoosted && !this.state.supercell && !this.state.isShuffling)
@@ -247,5 +249,7 @@ export class Game
             });
             this.state.isMoving = true;          // Идём на этап перемещения
         }
+
+        this.mainScene.updateStats();   // Обновляем значения элементов индикации
     }
 }
