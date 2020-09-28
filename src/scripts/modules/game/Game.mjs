@@ -217,18 +217,9 @@ export class Game
         // Перемешивание поля
         if (this.state.isShuffling && !this.state.isMoving)
         {            
-            this.mainScene.uiLock();                       // Блокируем интерфейс
-            this.gameLogic.shuffle();                 // Перемешиваем поле
-            this.state.changes = [];             // Очищаем массив с изменёнными ячейками
-            this.gameLogic._field.forEach(cell => {
-                const tile = this.mainScene.collection.grid.getCell(cell.dx, cell.dy);                // Получаем ячейку
-                let loc = this.mainScene.collection.grid.getCellLocation(cell.x, cell.y);             // Получаем новые координаты
-                tile.instance.addSerialTask(move(loc.x, loc.y, 100, 300));  // Запускаем анимацию перемещения
-                tile.updateX = cell.x;                                      // Задём координаты
-                tile.updateY = cell.y;                                      // для обновления
-                this.state.changes.push(tile);
-            });
-            this.state.isMoving = true;          // Идём на этап перемещения
+            this.mainScene.uiLock();                        // Блокируем интерфейс
+            this.state.changes = this.gameField.shuffle();  // Перемешиваем поле и получаем изменения
+            this.state.isMoving = true;                     // Идём на этап перемещения
         }
         this.mainScene.updateStats();   // Обновляем значения элементов индикации
     }

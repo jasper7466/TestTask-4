@@ -77,4 +77,21 @@ export class GameField
         group.forEach(element => this._visualField.removeItem(element));
         return false;
     }
+
+    // Метод перемешивания поля
+    shuffle()
+    {
+        const changes = [];             // Массив перемещаемых ячеек
+
+        this._logicField.shuffle();                                                 // Перемешиваем логическое поле
+        this._logicField.getField().forEach(cell => {
+            const tile = this._visualField.getCell(cell.dx, cell.dy);               // Получаем ячейку
+            let loc = this._visualField.getCellLocation(cell.x, cell.y);            // Получаем новые координаты
+            tile.instance.addSerialTask(move(loc.x, loc.y, 100, 300));      // Запускаем анимацию перемещения
+            tile.updateX = cell.x;                                          // Задём координаты для обновления
+            tile.updateY = cell.y;
+            changes.push(tile);                                             // Складываем в массив
+        });
+        return changes;
+    }
 }
