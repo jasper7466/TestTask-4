@@ -38,7 +38,6 @@ export class MainScene extends Scene
     init()
     {
         super.init();
-        console.log('init');
         
         // Фон
         this.collection.layout.setBackgroundImage(this.game.assets.images.background);

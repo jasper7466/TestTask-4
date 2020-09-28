@@ -73,7 +73,6 @@ export class Game
             isShuffling: false,         // Флаг "перемешивание в процессе"
             isBoosted: false,           // Флаг включения бустера
             isSupercell: false,         // Флаг "супер-клетка"
-            target: undefined,          // Сущность, на которой произошло событие нажатия
             address: undefined,         // Адрес ячейки, содержащей сущность
             group: [],                  // Выбранная группа ячеек (адреса/ссылки сущностей)
             changes: undefined,         // Сместившаяся группа (адреса/ссылки сущностей)
@@ -87,9 +86,8 @@ export class Game
 
         this.screen.setScene(this.startScene);      // Включаем сцену стартового меню
         this.screen.clearTasks();                   // Чистим очередь задач в движке
-        this.screen.addTask(() => this.loop());     // Добавляем циклический вызов функции игрового цикла
         this.mainScene.init();                      // Инициализируем основную сцену
-        this.gameField.refill();                    // Заполняем сетку тайлами
+        this.screen.addTask(() => this.loop());     // Добавляем циклический вызов функции игрового цикла
     }
 
     // Обработчик события клика по тайлу
@@ -97,7 +95,7 @@ export class Game
     {
         return target => {
             this.state.isPressed = true;     // Выставляем флаг нажатия
-            this.state.target = target;      // Указываем ссылку на сущность
+            this.state.address = this.mainScene.collection.grid.getInstanceAddress(target);  // Получаем адрес тайла в сетке
         }
     }
 
@@ -113,35 +111,26 @@ export class Game
 
     loop()
     {
-        // this.gameField.refill();                    // Заполняем сетку тайлами
+        this.gameField.refill();                    // Пробуем дозаполнить сетку тайлами
         // >>> Этап 1 - нажатие на тайл
         if (this.state.isPressed)
         {
-            this.state.address = this.mainScene.collection.grid.getInstanceAddress(this.state.target);          // Получаем адрес тайла в сетке
-
             // Получаем группу адресов ячеек на удаление
-            if (this.state.isBoosted)                                // Если включен режим "Бустер"
-            {
-                this.state.group = this.gameLogic.getRadius(this.state.address.x, this.state.address.y, config.boostR);
+            this.state.group = this.gameField.getGroup(this.state.address.x, this.state.address.y, this.state.isBoosted, this.state.isSupercell);
+            this.state.isSupercell = this.gameLogic.isSupercell(this.state.address.x, this.state.address.y);
+            if (this.state.isBoosted)
                 this.state.boosters--;
-            }
-            else                                                // Если обычный тайл или "супер-тайл"
-            {
-                this.state.supercell = this.gameLogic.isSupercell(this.state.address.x, this.state.address.y);
-                this.state.group = this.gameLogic.getGroup(this.state.address.x, this.state.address.y);
-            }
 
-            if (this.state.group.length < config.minGroup)                  // Ограничение на минимальную группу тайлов
+            if (this.state.group.length < config.minGroup && !this.state.isBoosted) // Ограничение на минимальную группу тайлов
             {
                 this.state.isPressed = false;
                 return;
             }
-
+            
             this.mainScene.uiLock();   // Блокируем интерфейс
-            this.state.group = this.state.group.map(element => this.mainScene.collection.grid.getCell(element.x, element.y));   // Получаем ячейки
-
+            
             // Для каждого адреса из группы на удаление ищем тайл и применяем анимацию исчезновения
-            this.state.group.forEach(cell => cell.instance.addSerialTask(fade(1, 0.4, 1, 2)));
+            this.state.group.forEach(cell => cell.addSerialTask(fade(1, 0.4, 1, 2)));
             this.state.isPressed = false;    // Снимаем флаг нажатия на тайл
             this.state.isRemoving = true;    // Выставляем флаг ожидания удаления
             this.state.moves--;              // Декрементим количество оставшихся ходов
@@ -152,15 +141,7 @@ export class Game
         // >>> Этап 2 - удаление группы тайлов
         if (this.state.isRemoving)
         {
-            this.state.isRemoving = false;               // Пробуем перейти на следующий шаг
-
-            // Если хоть одна анимация не завершена - возвращаемся на прошлый шаг
-            this.state.group.forEach(element => {
-                if (element.instance.getSerialQueueSize() > 0)
-                    this.state.isRemoving = true;
-                else
-                    this.mainScene.collection.grid.removeItem(element.instance);  // Если анимация завершена - удаляем элемент из сетки
-            });
+            this.state.isRemoving = this.gameField.removeGroup(this.state.group);
 
             // Если анимации завершены
             if (!this.state.isRemoving)
@@ -194,7 +175,7 @@ export class Game
             if (!this.state.isMoving)
             {
                 this.mainScene.collection.grid.updateItems();       // Обновляем координаты элементов в сетке
-                const refilment = this.gameField.refill();          // Заполняем пустые ячейки, получаем массив новых ячеек
+                // const refilment = this.gameField.refill();          // Заполняем пустые ячейки, получаем массив новых ячеек
                 this.state.progress = this.state.score / config.scoreToWin;             // Обновляем прогресс
                 
                 // Обработка ситуации проигрыша/выигрыша по очкам и ходам
@@ -209,7 +190,7 @@ export class Game
                     this.state.movesAvailable =  this.gameLogic.getMoves(); // Определяем оставшиеся ходы
 
                     // Обработка ситуации появления "супер-тайла"
-                    if (this.state.group.length >= config.superGroup && !this.state.isBoosted && !this.state.supercell && !this.state.isShuffling)
+                    if (this.state.group.length >= config.superGroup && !this.state.isBoosted && !this.state.isSupercell && !this.state.isShuffling)
                     {
                         this.gameLogic.setSuperCell(this.state.address.x, this.state.address.y);
                         const sCell = this.mainScene.collection.grid.getCell(this.state.address.x, this.state.address.y).instance;
@@ -249,7 +230,6 @@ export class Game
             });
             this.state.isMoving = true;          // Идём на этап перемещения
         }
-
         this.mainScene.updateStats();   // Обновляем значения элементов индикации
     }
 }

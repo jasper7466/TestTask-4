@@ -120,10 +120,7 @@ export class BlastEngine
     // Метод выдачи группы найденных ячеек во внешние интерфейсы
     getGroup(cellX, cellY)
     {
-        if (this.getCell(cellX, cellY).type == this._super_cell)
-            this._group = this.getCross(cellX, cellY);
-        else
-            this._group = this._getGroup(cellX, cellY);
+        this._group = this._getGroup(cellX, cellY);
         return this._group;
     }
 

@@ -44,4 +44,37 @@ export class GameField
         });
         return refillment;
     }
+
+    // Метод получения группы
+    getGroup(x, y, boosted = false, sCell = false)
+    {
+        let group = [];
+
+        if (boosted)                                // Если включен режим "Бустер"
+        {
+            group = this._logicField.getRadius(x, y, config.boostR);
+            this.state.boosters--;
+        }
+        else                                                // Если обычный тайл или "супер-тайл"
+        {
+            if (this._logicField.isSupercell(x, y))
+                group = this._logicField.getCross(x, y);
+            else
+                group = this._logicField.getGroup(x, y);
+        }
+
+        group = group.map(element => this._visualField.getCell(element.x, element.y).instance);   // Получаем ячейки
+
+        return group;
+    }
+
+    // Метод для удаления группы
+    removeGroup(group)
+    {
+        if (group.some(element => {return element.getSerialQueueSize() > 0}))
+            return true;
+
+        group.forEach(element => this._visualField.removeItem(element));
+        return false;
+    }
 }
