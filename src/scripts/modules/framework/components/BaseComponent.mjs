@@ -1,9 +1,8 @@
 // Класс базового компонента
 export class BaseComponent
 {
-    constructor(ctx)
+    constructor()
     {
-        this._ctx = ctx;                    // Контекст
         this._x = 0;                        // Положение по оси X
         this._y = 0;                        // Положение по оси Y
         this._dx = 0;                       // Положение точки отрисовки по X c учётом точки привязки
@@ -14,12 +13,12 @@ export class BaseComponent
         this._anchorY = 0;                  // Точка привязки по оси Y
         this._background = undefined;       // Фоновое изображение
         this._alpha = 1;                    // Прозрачность компонента
-        this._borders = {                   // Координаты границ
-            leftTop: 0,
-            rightTop: 0,
-            leftBottom: 0,
-            rightBottom: 0
-        };
+        // this._borders = {                   // Координаты границ
+        //     leftTop: 0,
+        //     rightTop: 0,
+        //     leftBottom: 0,
+        //     rightBottom: 0
+        // };
 
         this._hitbox = {                    // Зона hitbox'а
             left: 0,                        // Применяется при обработке событий взаимодействия с компонентом
@@ -45,12 +44,6 @@ export class BaseComponent
         this._parallelTaskQueue = [];       // Очередь параллельных задач
     }
 
-    // Метод установки контекста
-    setContext(ctx)
-    {
-        this._ctx = ctx;
-    }
-
     // Метод установки положения по обеим осям
     setPosition(x, y)
     {
@@ -66,19 +59,18 @@ export class BaseComponent
         this._dx = this._x - this._width * this._anchorX;
         this._dy = this._y - this._height * this._anchorY;
 
-        this._borders.leftTop = this._dx;
-        this._borders.leftTop = this._dx;
+        // this._borders.leftTop = this._dx;
+        // this._borders.leftTop = this._dx;
 
-        
-        // Вычисляем смещение относительно точки привязки
-        const aX = this._width * this._anchorX;
-        const aY = this._height * this._anchorY;
+        // // Вычисляем смещение относительно точки привязки
+        // const aX = this._width * this._anchorX;
+        // const aY = this._height * this._anchorY;
 
-        // Вычисляем абсолютное значение оффсетов для текущих параметров
-        const left = this._x + this._width * this._hitbox.left - aX;
-        const right = this._x + this._width - this._width * this._hitbox.right - aX;
-        const top = this._y + this._height * this._hitbox.top - aY;
-        const bottom = this._y + this._height - this._height * this._hitbox.bottom - aY;
+        // // Вычисляем абсолютное значение оффсетов для текущих параметров
+        // const left = this._x + this._width * this._hitbox.left - aX;
+        // const right = this._x + this._width - this._width * this._hitbox.right - aX;
+        // const top = this._y + this._height * this._hitbox.top - aY;
+        // const bottom = this._y + this._height - this._height * this._hitbox.bottom - aY;
     }
 
     // Метод получения текущего положения
@@ -116,8 +108,8 @@ export class BaseComponent
     getSize()
     {
         return {
-            width: this._width = width,
-            height: this._height = height
+            width: this._width,
+            height: this._height
         };
     }
 
@@ -142,6 +134,7 @@ export class BaseComponent
     setBackgroundImage(img)
     {
         this._background = img;
+        this._refresh();
     }
 
     // Метод изменения размера под фоновое изображение
@@ -347,10 +340,10 @@ export class BaseComponent
     }
 
     // Метод отрисовки
-    render()
+    render(ctx)
     {
         // Применяем прозрачность компонента к контексту
-        this._ctx.globalAlpha = this._alpha;
+        ctx.globalAlpha = this._alpha;
 
         // Выполняем проход по стеку параллельных задач
         this._parallelTaskQueue.forEach(func => {
@@ -366,9 +359,9 @@ export class BaseComponent
         }
         
         if (this._background != undefined)      // Если фоновое изображение задано
-            this._ctx.drawImage(this._background, this._dx, this._dy, this._width, this._height);
+            ctx.drawImage(this._background, this._dx, this._dy, this._width, this._height);
 
         // Восстанавливаем значение прозрачности для контекста
-        this._ctx.globalAlpha = this.alpha;
+        ctx.globalAlpha = this.alpha;
     }
 }

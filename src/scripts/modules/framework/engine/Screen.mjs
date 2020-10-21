@@ -8,6 +8,7 @@ export class Screen
         this._canvas.height = height;                       // Высота
         this._ctx = this._canvas.getContext('2d');          // Контекст
         this._renderQueue = [];                             // Очередь рендер-функций слоёв
+        this._renderScene = undefined;                      // Текущая сцена, имеет приоритет выше, чем у очереди рендеринга
         this._taskQueue = [];                               // Очередь прочих функций для циклического выполнения
         this._stopEngine = true;                            // Флаг остановки движка отрисовки
         this._background_color = background_color;          // Цвет фона
@@ -83,6 +84,26 @@ export class Screen
         this._taskQueue.push(callback);
     }
 
+    // Метод очистки очереди циклического выполнения
+    clearTasks()
+    {
+        this._taskQueue = [];
+    }
+
+    // Метод установки сцены для рендеринга
+    setScene(scene)
+    {
+        if (!scene.isInit())
+            scene.init();
+        this._renderScene = scene;
+    }
+
+    // Метод сброса сцены
+    clearScene()
+    {
+        this._renderScene = undefined;
+    }
+
     // Метод для запуска движка отрисовки
     renderEngineStart()
     {
@@ -99,11 +120,16 @@ export class Screen
     // Метод для отрисовки кадра анимационного цикла
     _renderStep()
     {
-        if (this._stopEngine)                                   // Выходим, если движок остановлен
+        if (this._stopEngine)                                                   // Выходим, если движок остановлен
             return;
-        this._taskQueue.forEach(task => task());                // Выполняем задания из очереди
-        this.clear();                                           // Чистим холст
-        this._renderQueue.forEach(control => control.render()); // Отрисовываем элементы
+
+        this.clear();                                                           // Чистим холст
+        if(this._renderScene)
+           this._renderScene.render(this._ctx);                                 // В приориете рендерим сцену
+        else
+            this._renderQueue.forEach(control => control.render(this._ctx));    // Если сцена не задана - пробуем отрисовать элементы
+
+        this._taskQueue.forEach(task => task());                                // Выполняем задания из очереди
         requestAnimationFrame(() => this._renderStep());
     }
 
@@ -113,7 +139,10 @@ export class Screen
         let x = event.offsetX;
         let y = event.offsetY;
         
-        this._renderQueue.forEach(control => control.onPress(x, y));
+        if(this._renderScene)
+            this._renderScene.onPress(x, y);
+        else
+            this._renderQueue.forEach(control => control.onPress(x, y));
     }
 
     // Обработчик события отпускания кнопки мыши
@@ -122,7 +151,10 @@ export class Screen
         let x = event.offsetX;
         let y = event.offsetY;
         
-        this._renderQueue.forEach(control => control.onRelease(x, y));
+        if(this._renderScene)
+            this._renderScene.onRelease(x, y);
+        else
+            this._renderQueue.forEach(control => control.onRelease(x, y));
     }
 
     // Обработчик события движения мыши
@@ -130,7 +162,9 @@ export class Screen
     {
         let x = event.offsetX;
         let y = event.offsetY;
-        
-        this._renderQueue.forEach(control => control.onMove(x, y));
+        if(this._renderScene)
+            this._renderScene.onMove(x, y);
+        else
+            this._renderQueue.forEach(control => control.onMove(x, y));
     }
 }

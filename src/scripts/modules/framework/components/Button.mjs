@@ -4,9 +4,9 @@ import { Label } from './Label.mjs';
 // Класс кнопки
 export class Button extends Label
 {
-    constructor(ctx, fontsize = 14, textcolor = '#00', font = 'serif', text = '')
+    constructor(fontsize = 14, textcolor = '#00', font = 'serif', text = '')
     {
-        super(ctx, fontsize, textcolor, font, text);
+        super(fontsize, textcolor, font, text);
 
         this._baseImg = undefined;          // Базовый спрайт
         this._hoverImg = undefined;         // Спрайт при наведении

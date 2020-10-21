@@ -4,9 +4,9 @@ import { BaseComponent } from './BaseComponent.mjs';
 // Класс метки для вывода текста
 export class Label extends BaseComponent
 {
-    constructor(ctx, fontsize = 14, textcolor = '#00', font = 'serif', text = '')
+    constructor(fontsize = 14, textcolor = '#00', font = 'serif', text = '')
     {
-        super(ctx);
+        super();
         this._fontsize = fontsize;
         this._font = font;
         this._baseline = 'middle';
@@ -20,20 +20,20 @@ export class Label extends BaseComponent
     }
 
     // Переопределённый метод отрисовки
-    render()
+    render(ctx)
     {
-        super.render();
-        this._ctx.font = `${this._fontsize}px ${this._font}`;   // Задём размер текста и шрифт
-        this._ctx.fillStyle = this._textcolor;                  // Задаём цвет
-        this._ctx.textBaseline = this._baseline;                // Центрируем по средней линии
+        super.render(ctx);
+        ctx.font = `${this._fontsize}px ${this._font}`;         // Задём размер текста и шрифт
+        ctx.fillStyle = this._textcolor;                        // Задаём цвет
+        ctx.textBaseline = this._baseline;                      // Центрируем по средней линии
         
-        let meas = this._ctx.measureText(this._text);           // Измеряем длину текста
+        let meas = ctx.measureText(this._text);                 // Измеряем длину текста
         let x = this._x + (this._width - meas.width) / 2;       // Центрируем по горизонтали
         let y = this._y + this._height / 2;                     // Центрируем по вертикали
         
         x -= this._width * this._anchorX;                       // Учитываем точку привязки по X
         y -= this._height * this._anchorY;                      // Учитываем точку привязки по Y
 
-        this._ctx.fillText(this._text, x, y);                   // Выводим
+        ctx.fillText(this._text, x, y);                         // Выводим
     }
 }

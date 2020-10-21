@@ -4,9 +4,9 @@ import { BaseComponent } from './BaseComponent.mjs';
 // Класс контейнера-сетки
 export class Grid extends BaseComponent
 {
-    constructor(ctx, cellsX, cellsY, ratio = 1)
+    constructor(cellsX, cellsY, ratio = 1)
     {
-        super(ctx);
+        super();
         this._cellsX = cellsX;      // Размер сетки по оси x (количество столбцов)
         this._cellsY = cellsY;      // Размер сетки по оси y (количество строк)
         this._ratio = ratio;        // Отношение сторон ячейки сетки
@@ -27,14 +27,20 @@ export class Grid extends BaseComponent
     {
         this._stepX = (this._width - this._width * this._paddingH) / this._cellsX;
         this._stepY = (this._height - this._height * this._paddingV) / this._cellsY;
+
+        this._collection.forEach(item => {
+            const relocation = this.getCellLocation(item.cellX, item.cellY);
+            item.instance.setPosition(relocation.x, relocation.y);
+            item.instance.scaleOnBackgroundWidth(this._stepX);   // FIXME: частный случай
+        });
         // this._alignX = (this._width - this._stepX * this._cellsX) / 2;
         // this._alignY = (this._height - this._stepY * this._cellsY) / 2;
     }
 
-    // Метод установки размеров контейнера
-    setSize(x, y)
+    // Расширенный метод пересчёта параметров
+    _refresh()
     {
-        super.setSize(x, y);
+        super._refresh();
         this._gridRecalc();
     }
 
@@ -72,7 +78,6 @@ export class Grid extends BaseComponent
     {
         const loc = this.getCellLocation(cellX, cellY);
 
-        instance.setContext(this._ctx);
         instance.setPosition(loc.x, loc.y);
         instance.scaleOnBackgroundWidth(this._stepX);   // FIXME: частный случай
 
@@ -146,7 +151,7 @@ export class Grid extends BaseComponent
     }
 
     // Метод отрисовки
-    render()
+    render(ctx)
     {
         this.sortCollection();
         // Удаляем элементы, стоящие в очереди
@@ -157,11 +162,10 @@ export class Grid extends BaseComponent
 
         this._removeQueue = [];     // Очищаем очередь на удаление
         
-        super.render();
+        super.render(ctx);
 
         // Инициируем отрисовку сущностей из ячеек
-        this._collection.forEach(item => item.instance.render());
-
+        this._collection.forEach(item => item.instance.render(ctx));
         // FIXME: DEBUG
         // this._ctx.font = "18px serif";
         // this._ctx.fillStyle = "#FF00FF"

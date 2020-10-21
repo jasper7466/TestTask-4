@@ -4,9 +4,9 @@ import { BaseComponent } from './BaseComponent.mjs';
 // Класс полосы загрузки
 export class ProgressBar extends BaseComponent
 {
-    constructor(ctx)
+    constructor()
     {
-        super(ctx);
+        super();
         this._progress = 0;         // Текущее значение прогресса
         this._progressX = 0;        // Точка начала отрисовки по X
         this._progressY = 0;        // Точка начала отрисовки по Y
@@ -54,28 +54,28 @@ export class ProgressBar extends BaseComponent
     }
 
     // Метод для отрисовки полосы прогресса со скруглёнными краями
-    _clipper(x, y, rad, width, drawer)
+    _clipper(ctx, x, y, rad, width, drawer)
     {
-        this._ctx.beginPath();
-        this._ctx.arc(x, y, rad, Math.PI / 2, Math.PI + Math.PI / 2, false);            // Левая полуокружность
-        this._ctx.arc(x + width, y, rad, Math.PI + Math.PI / 2, Math.PI / 2, false);    // Правая полуокружность
-        this._ctx.closePath();
-        this._ctx.save();
-        this._ctx.clip();
+        ctx.beginPath();
+        ctx.arc(x, y, rad, Math.PI / 2, Math.PI + Math.PI / 2, false);            // Левая полуокружность
+        ctx.arc(x + width, y, rad, Math.PI + Math.PI / 2, Math.PI / 2, false);    // Правая полуокружность
+        ctx.closePath();
+        ctx.save();
+        ctx.clip();
         drawer();
-        this._ctx.restore();
+        ctx.restore();
     }
 
     // Метод отрисовки
-    render()
+    render(ctx)
     {
         // Функция отрисовки полосы прогресса
-        const drawer = () => this._ctx.drawImage(this._bar, this._dx, this._dy, this._width, this._height);
+        const drawer = () => ctx.drawImage(this._bar, this._dx, this._dy, this._width, this._height);
         
         // Отрисовываем фон
-        this._clipper(this._progressX, this._progressY, this._outerRadius, this._progressWidth, () => super.render());
+        this._clipper(ctx, this._progressX, this._progressY, this._outerRadius, this._progressWidth, () => super.render(ctx));
 
         // Отрисовываем полосу прогресса
-        this._clipper(this._progressX, this._progressY, this._innerRadius, this._progressStop, drawer);
+        this._clipper(ctx, this._progressX, this._progressY, this._innerRadius, this._progressStop, drawer);
     }
 }

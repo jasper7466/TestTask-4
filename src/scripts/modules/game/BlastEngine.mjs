@@ -1,28 +1,25 @@
-import { RandomIntInclusive } from '../utilities/Random.mjs';
+import { RandomIntInclusive } from '../../utilities/Random';
 
 // Класс игровой логики
 export class BlastEngine
 {
-    constructor(cellsX, cellsY, variety, minGroup, superGroup)
+    constructor(cellsX, cellsY, variety, minGroup)
     {
         this._cellsX = cellsX;          // Количество ячеек по оси X
         this._cellsY = cellsY;          // Количество ячеек по оси Y
         this._variety = variety - 1;    // Количество вариаций типов ячеек
         this._minGroup = minGroup;      // Минимальный размер группы
-        this._superGroup = superGroup;  // Минимальный размер группы
 
         this._field = [];               // Будущий "двумерный" массив игрового поля
         this._empty_cell = -1;          // Тип, присваиваемый пустой ячейке
         this._super_cell = variety;     // Тип, присваиваемый "супер-ячейке"
         this._group = undefined;        // Выбранная группа однотипных ячеек
-
-        this.init();
-        this.randomFill();
     }
 
     // Инициализация
     init()
     {
+        this._field = [];
         for (let y = 0; y < this._cellsY; y++)
         {
             for (let x = 0; x < this._cellsX; x++)
@@ -42,9 +39,17 @@ export class BlastEngine
     // Метод заполнения поля случайным образом
     randomFill()
     {
-        const refilment = this._field.filter(cell => cell.type === this._empty_cell);   // Получаем набор ячеек для обновления
+        const refilment = this._field.filter(cell => cell.type == this._empty_cell);   // Получаем набор ячеек для обновления
         refilment.forEach(cell => cell.type = RandomIntInclusive(0, this._variety));    // Заполняем тип ячеек
         return refilment;
+    }
+
+    // Метод получения копии поля (не глубокой)
+    getField()
+    {
+        const field = [];
+        this._field.forEach(item => field.push(Object.assign({}, item)));
+        return field;
     }
 
     // Метод получения параметров ячейки по её адресу
@@ -64,58 +69,58 @@ export class BlastEngine
         return this.getCell(x, y).type == this._super_cell;
     }
 
-    // Метод рекурсивного поиска группы однотипных соседних ячеек по координатам одной ячейки
-    _getGroup(cellX, cellY, type = undefined, group = [])
+    // Метод для проверки нахождения координат в пределах сетки
+    _validAddress(x, y)
     {
-        // Проверяем валидность координат (должны лежать в пределах сетки)
-        const validX = cellX >= 0 && cellX < this._cellsX;
-        const validY = cellY >= 0 && cellY < this._cellsY;
-        if (!validX || !validY)
-            return group;
-        
-        // Если это первый вызов метода - определяем искомый тип элементов группы
-        if (type === undefined)
-        {
-            type = this.getCell(cellX, cellY).type;
-            // Рекурсивно вызываем этот же метод, но уже с типом и массивом группы
-            return this._getGroup(cellX, cellY, type, group);
-        }
+        const validX = x >= 0 && x < this._cellsX;
+        const validY = y >= 0 && y < this._cellsY;
+        return validX && validY;
+    }
 
-        const cell = this.getCell(cellX, cellY);
-
-        // Проверяем совпадение типов по переданным координатам
-        if (cell.type != type)
-            return group;
-        
-        // Если эти координаты уже проверялись ранее - пропускаем их обработку
-        if (group.find(cell => cell.x == cellX && cell.y == cellY))
-            return group;
-
-        // Если добрались до этого места - добавляем ячейку в группу
-        group.push({x: cellX, y: cellY});
-
-        // Формируем массив для проверки соседних ячеек
-        const adjacent = [
-            {x: cellX + 1, y: cellY},
-            {x: cellX - 1, y: cellY},
-            {x: cellX, y: cellY + 1},
-            {x: cellX, y: cellY - 1}
+    // Метод получения соседних ячеек
+    _getSiblingCells(cell)
+    {
+        const cells = [];               // Массив объектов "ячейка"
+        const addresses = [             // Массив объектов "адрес"
+            {x: cell.x + 1, y: cell.y},
+            {x: cell.x - 1, y: cell.y},
+            {x: cell.x, y: cell.y + 1},
+            {x: cell.x, y: cell.y - 1}
         ];
+        addresses.forEach(addr => {
+            const cell = this.getCell(addr.x, addr.y);
+            if (cell)
+                cells.push(cell);
+        });
+        return cells;
+    }
 
-        // Рекурсивно вызываем метод для соседних ячеек
-        adjacent.forEach(cell => this._getGroup(cell.x, cell.y, type, group));
+    // Итеративный метод поиска группы
+    _getGroup(cellX, cellY)
+    {
+        const group = []            // Группа
 
-        // На последней итерации вернём массив с координатами ячеек группы
+        if (!this._validAddress(cellX, cellY))  // Проверяем валидность координат
+            return group;
+
+        const firstCell = this.getCell(cellX, cellY);   // Получаем "кликнутую" ячейку по её адресу
+        const type = firstCell.type;                    // Определяем тип элементов для поиска
+        group.push(firstCell);                          // Кладём первую ячейку в группу
+
+        for (let i = 0; i < group.length; i++)
+        {
+            this._getSiblingCells(group[i]).forEach(sibling => {                    // Получаем соседей ячейки
+                if (sibling.type == type && !group.find(cell => cell == sibling))   // Для каждого соседа сверяем тип и дубликат в группе
+                    group.push(sibling);                                            // Если найден новый уникальный элемент - добавляем его в группу
+            });
+        }
         return group;
     }
 
     // Метод выдачи группы найденных ячеек во внешние интерфейсы
     getGroup(cellX, cellY)
     {
-        if (this.getCell(cellX, cellY).type == this._super_cell)
-            this._group = this.getCross(cellX, cellY);
-        else
-            this._group = this._getGroup(cellX, cellY);
+        this._group = this._getGroup(cellX, cellY);
         return this._group;
     }
 
@@ -154,29 +159,10 @@ export class BlastEngine
         return this._group;
     }
 
-    // Метод для получения строки
-    getRow(cellX, cellY)
-    {
-        const group = [];
-
-        for (let x = 0; x < this._cellsX; x++)
-        {
-            group.push({x: x, y: cellY});
-        }
-        this._group = group;
-        return this._group;
-    }
-
-    // Метод сброса типа ячейки
-    clearCell(x, y)
-    {
-        this.getCell(x, y).type = this._empty_cell;
-    }
-
     // Метод сброса типов группы клеток
     clearGroup()
     {
-        this._group.forEach(cell => this.clearCell(cell.x, cell.y));
+        this._group.forEach(cell => this.getCell(cell.x, cell.y).type = this._empty_cell);
     }
 
     // Метод проверки на пустую ячейку
