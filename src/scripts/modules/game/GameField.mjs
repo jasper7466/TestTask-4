@@ -46,14 +46,17 @@ export class GameField
     }
 
     // Метод получения группы
-    getGroup(x, y, boosted = false, sCell = false)
+    getGroup(state)
     {
+        const x = state.address.x;
+        const y = state.address.y;
+        const boosted = state.isBoosted;
+
         let group = [];
 
         if (boosted)                                // Если включен режим "Бустер"
         {
             group = this._logicField.getRadius(x, y, config.boostR);
-            this.state.boosters--;
         }
         else                                                // Если обычный тайл или "супер-тайл"
         {

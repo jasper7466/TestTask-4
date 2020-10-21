@@ -116,7 +116,7 @@ export class Game
         if (this.state.isPressed)
         {
             // Получаем группу адресов ячеек на удаление
-            this.state.group = this.gameField.getGroup(this.state.address.x, this.state.address.y, this.state.isBoosted, this.state.isSupercell);
+            this.state.group = this.gameField.getGroup(this.state);
             this.state.isSupercell = this.gameLogic.isSupercell(this.state.address.x, this.state.address.y);
             if (this.state.isBoosted)
                 this.state.boosters--;
