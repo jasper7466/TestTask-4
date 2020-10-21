@@ -137,6 +137,8 @@ export class MainScene extends Scene
         this.collection.movesLabel.setText(this.game.state.moves);
         this.collection.scoreLabel.setText(this.game.state.score);
         this.collection.progress.setProgress(this.game.state.progress);
+        this.collection.boosterButton.setText(`Бустер (x${this.game.state.boosters})`);
+        this.collection.groupsLabel.setText(`Доступно ходов: ${this.game.state.movesAvailable}`);
     }
 
     // Метод блокировки пользовательского интерфейса
@@ -154,15 +156,6 @@ export class MainScene extends Scene
         this.collection.shuffleButton.enableEvents();       // Разрешаем события кнопки "Перемешать"
         if (this.game.state.boosters > 0)
             this.collection.boosterButton.enableEvents();   // Разрешаем события кнопки "Бустер"
-    }
-
-    // Обработчик события клика по тайлу
-    tileClickHandler()
-    {
-        return target => {
-             this.game.state.isPressed = true;     // Выставляем флаг нажатия
-             this.game.state.target = target;      // Указываем ссылку на сущность
-        }
     }
 
     // Обработчик события клика по кнопке "Пауза"
